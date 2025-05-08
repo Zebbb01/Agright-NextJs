@@ -1,5 +1,4 @@
 import ChartPanel from '@/components/widget/ChartPanel';
-import FormBuilderTable from '@/components/table/FormBuilderTable';
 import MapPanel from '@/components/widget/MapPanel';
 import ResponsesTable from '@/components/table/ResponsesTable';
 

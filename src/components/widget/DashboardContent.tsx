@@ -8,7 +8,6 @@ export default function DashboardContent() {
 
   if (pathname.includes('chart')) content = <p>Static Chart View</p>;
   if (pathname.includes('map')) content = <p>Static Map View</p>;
-  if (pathname.includes('form-builder')) content = <p>Static Form Builder</p>;
   if (pathname.includes('forms')) content = <p>Static Forms Created by Admin</p>;
   if (pathname.includes('responses')) content = <p>Static User Responses</p>;
   if (pathname.includes('roles')) content = <p>Static Role Management</p>;

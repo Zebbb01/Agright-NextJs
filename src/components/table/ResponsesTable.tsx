@@ -1,85 +1,109 @@
-"use client";
+// src/components/table/ResponsesTable.tsx
+'use client';
 
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { responses } from '@/data/response';
 
-const responses = [
-  {
-    date: "2025-04-30",
-    "block": ["1", "2"],
-    "terrain": "15",
-    "farm-name": "Katipunan",
-    "encoder-name": "Ronald Bahan",
-    "upload-photo": "diseases/images/IMG_4256 - Jessve D. Daypuyart.jpeg",
-    "types-of-diseases": "Mosaic virus",
-    latitude: 7.08112500,
-    longitude: 125.61072500,
-  },
-  {
-    date: "2025-04-28",
-    "block": ["3","1", "2"],
-    "terrain": "16",
-    "farm-name": "Golden Cacao",
-    "encoder-name": "Jessica Reyes",
-    "upload-photo": "diseases/images/img_4021.jpeg",
-    "types-of-diseases": "Black Pod",
-    latitude: 7.10200000,
-    longitude: 125.61230000,
-  },
-];
+const ITEMS_PER_PAGE = 15;
 
-export default function ResponsesTable() {
+type ResponsesTableProps = {
+  setIsCreating?: (open: boolean) => void;
+  showAddButton?: boolean;
+  formId?: string | null;
+  isAdmin?: boolean;
+};
+
+
+export default function ResponsesTable({ setIsCreating, showAddButton = false }: ResponsesTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(responses.length / ITEMS_PER_PAGE);
+  const paginated = responses.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
-    <Table>
-      <TableCaption>A list of recent cacao disease scan responses.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Encoder Name</TableHead>
-          <TableHead>Farm Name</TableHead>
-          <TableHead>Terrain</TableHead>
-          <TableHead>Type of Disease</TableHead>
-          <TableHead>Location</TableHead>
-          <TableHead>Image Upload</TableHead>
-          <TableHead>Blocks</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-      {responses.map((res, index) => (
-        <TableRow key={index}>
-            <TableCell>{res.date}</TableCell>
-            <TableCell>{res["encoder-name"]}</TableCell>
-            <TableCell>{res["farm-name"]}</TableCell>
-            <TableCell>{res.terrain}</TableCell>
-            <TableCell>{res["types-of-diseases"]}</TableCell>
-            <TableCell>{res.latitude}, {res.longitude}</TableCell>
-            <TableCell>
-            <a
-                href={`/${res["upload-photo"]}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline block"
-            >
-                {res["upload-photo"].split("/").pop()}
-            </a>
-            </TableCell>
-            <TableCell>{res.block.sort((a, b) => Number(a) - Number(b)).join(", ")}</TableCell>
-        </TableRow>
-        ))}
-      </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={8}>Total Responses: {responses.length}</TableCell>
-        </TableRow>
-      </TableFooter>
-    </Table>
+    <div className="space-y-4">
+      {showAddButton && setIsCreating && (
+        <Button onClick={() => setIsCreating(true)} className="ml-auto flex items-center gap-2">
+          <Plus size={16} /> Add Response
+        </Button>
+      )}
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Encoder</TableHead>
+            <TableHead>Farm</TableHead>
+            <TableHead>Terrain</TableHead>
+            <TableHead>Disease</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Photo</TableHead>
+            <TableHead>Blocks</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {paginated.map((r, i) => (
+            <TableRow key={i}>
+              <TableCell>{r.date}</TableCell>
+              <TableCell>{r['encoder-name']}</TableCell>
+              <TableCell>{r['farm-name']}</TableCell>
+              <TableCell>{r.terrain}</TableCell>
+              <TableCell>{r['types-of-diseases']}</TableCell>
+              <TableCell>{r.latitude}, {r.longitude}</TableCell>
+              <TableCell>
+                <a
+                  href={`/${r['upload-photo']}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline block"
+                >
+                  {r['upload-photo'].split('/').pop()}
+                </a>
+              </TableCell>
+              <TableCell>{r.block.sort((a,b) => +a - +b).join(', ')}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={8}>Total Responses: {responses.length}</TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+              className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+            />
+          </PaginationItem>
+          <PaginationItem>
+            Page {currentPage} of {totalPages}
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
   );
 }
