@@ -19,7 +19,7 @@ import {
 import { useState } from 'react';
 import { forms } from '@/data/form';
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 10;
 
 type FormTableProps = {
   setIsCreating: (isOpen: boolean) => void;

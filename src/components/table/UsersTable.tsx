@@ -28,7 +28,7 @@ const users = [
   { id: 2, name: "Ronald Bahan", email: "ronald@example.com", role: "Encoder" },
 ];
 
-const ITEMS_PER_PAGE = 15
+const ITEMS_PER_PAGE = 10
 
 export default function UsersTable() {
   const [currentPage, setCurrentPage] = useState(1)

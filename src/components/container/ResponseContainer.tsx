@@ -12,9 +12,7 @@ export default function ResponseContainer() {
   return (
     <div className="space-y-6">
       {isCreating ? (
-        <div className="flex justify-center mx-auto mb-4">
           <ResponsePanel setIsOpen={setIsCreating} formId={''} />
-        </div>
       ) : (
         <>
           <div className="flex justify-end">

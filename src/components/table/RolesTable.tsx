@@ -46,7 +46,7 @@ const roles = [
   },
 ];
 
-const ITEMS_PER_PAGE = 15
+const ITEMS_PER_PAGE = 10
 
 export default function RolesTable() {
   const [currentPage, setCurrentPage] = useState(1)
