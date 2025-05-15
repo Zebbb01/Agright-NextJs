@@ -1,32 +1,37 @@
-'use client'
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const availableRoles = ["Admin", "Encoder", "Viewer"]
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { roles } from "@/data/auth";
 
 export default function UsersPanel() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
-  const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [selectedRole, setSelectedRole] = useState("")
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   const handleCreateUser = () => {
     if (password !== confirmPassword) {
-      alert("Passwords do not match.")
-      return
+      alert("Passwords do not match.");
+      return;
     }
 
     console.log("User:", {
@@ -34,16 +39,16 @@ export default function UsersPanel() {
       email,
       password,
       role: selectedRole,
-    })
+    });
 
     // TODO: Submit to backend
-    setOpen(false)
-    setUsername("")
-    setEmail("")
-    setPassword("")
-    setConfirmPassword("")
-    setSelectedRole("")
-  }
+    setOpen(false);
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setSelectedRole("");
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -100,9 +105,9 @@ export default function UsersPanel() {
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
-              {availableRoles.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {role}
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.name}>
+                  {role.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -113,5 +118,5 @@ export default function UsersPanel() {
         </Button>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

@@ -55,6 +55,11 @@ export default function ResponsesTable({
       )
     : [];
 
+  const hasLocationColumn = filteredResponses.some(
+    (r) => 'Latitude' in r.values && 'Longitude' in r.values
+  );
+    
+
   return (
     <div className="space-y-4">
       {showAddButton && setIsCreating && (
@@ -68,13 +73,12 @@ export default function ResponsesTable({
 
       <Table>
         <TableHeader>
-          <TableRow>
-            {allKeys.map((key) => (
-              <TableHead key={key}>{key}</TableHead>
-            ))}
-            {/* Add a header for Location */}
-            <TableHead>Location</TableHead>
-          </TableRow>
+        <TableRow>
+          {allKeys.map((key) => (
+            <TableHead key={key}>{key}</TableHead>
+          ))}
+          {hasLocationColumn && <TableHead>Location(Lat,Long)</TableHead>}
+        </TableRow>
         </TableHeader>
         <TableBody>
           {paginated.map((r, i) => (
@@ -106,11 +110,13 @@ export default function ResponsesTable({
               })}
 
               {/* Combine Latitude and Longitude into a single Location cell */}
-              {'Latitude' in r.values && 'Longitude' in r.values && (
+              {hasLocationColumn && 'Latitude' in r.values && 'Longitude' in r.values ? (
                 <TableCell>
                   {r.values['Latitude']}, {r.values['Longitude']}
                 </TableCell>
-              )}
+              ) : hasLocationColumn ? (
+                <TableCell />
+              ) : null}
             </TableRow>
           ))}
         </TableBody>

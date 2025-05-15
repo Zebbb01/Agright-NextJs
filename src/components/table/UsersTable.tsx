@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { users } from "@/data/auth";
 import {
   Table,
   TableBody,
@@ -19,33 +21,42 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import UsersPanel from "../widget/auth/UsersPanel";
-import { useState } from "react";
 
-const users = [
-  { id: 1, name: "Gerald Villaceran", email: "gerald@example.com", role: "Admin" },
-  { id: 2, name: "Ronald Bahan", email: "ronald@example.com", role: "Encoder" },
-];
+// Assuming roles are imported or declared in the same file
+import { roles } from "@/data/auth";
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 10;
 
 export default function UsersTable() {
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
   const paginatedUsers = users.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
-  )
+  );
 
   const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1)
-  }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1)
-  }
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  // Function to get role name based on roleId
+  const getRoleName = (roleId: string) => {
+    const role = roles.find((role) => role.id === roleId);
+    return role ? role.name : "Unknown Role"; // Fallback if role is not found
+  };
 
   return (
     <>
@@ -60,12 +71,12 @@ export default function UsersTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
+          {paginatedUsers.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.name}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                <Badge>{user.role}</Badge>
+                <Badge>{getRoleName(user.roleId)}</Badge>{" "}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
@@ -76,7 +87,9 @@ export default function UsersTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -89,20 +102,32 @@ export default function UsersTable() {
           </TableRow>
         </TableFooter>
       </Table>
-          
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious onClick={handlePrevious} className={currentPage === 1 ? "pointer-events-none opacity-50" : ""} />
-              </PaginationItem>
-              <PaginationItem>
-                Page {currentPage} of {totalPages}
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext onClick={handleNext} className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={handlePrevious}
+              className={
+                currentPage === 1 ? "pointer-events-none opacity-50" : ""
+              }
+            />
+          </PaginationItem>
+          <PaginationItem>
+            Page {currentPage} of {totalPages}
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext
+              onClick={handleNext}
+              className={
+                currentPage === totalPages
+                  ? "pointer-events-none opacity-50"
+                  : ""
+              }
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </>
   );
 }

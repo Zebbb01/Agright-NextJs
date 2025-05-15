@@ -1,91 +1,117 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Trash2 } from 'lucide-react'
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Trash2 } from "lucide-react";
 
 type FormField = {
-  id: number
-  type: string
-  label: string
-  options?: string[]
-}
+  id: number;
+  type: string;
+  label: string;
+  options?: string[];
+};
 
 type Props = {
-  setIsOpen: (open: boolean) => void
-}
+  setIsOpen: (open: boolean) => void;
+};
 
-const inputTypes = ['Text', 'Textarea', 'Radio', 'Checkbox', 'Date', 'Image Upload', 'File Upload']
+const inputTypes = [
+  "Text",
+  "Textarea",
+  "Radio",
+  "Checkbox",
+  "Date",
+  "Image Upload",
+  "File Upload",
+];
 
 export default function FormPanel({ setIsOpen }: Props) {
-  const [formName, setFormName] = useState('')
-  const [details, setDetails] = useState('')
-  const [fields, setFields] = useState<FormField[]>([])
+  const [formName, setFormName] = useState("");
+  const [details, setDetails] = useState("");
+  const [fields, setFields] = useState<FormField[]>([]);
 
   const handleAddField = () => {
-    setFields([...fields, { id: Date.now(), type: 'Text', label: '' }])
-  }
+    setFields([...fields, { id: Date.now(), type: "Text", label: "" }]);
+  };
 
   const handleFieldChange = (id: number, key: keyof FormField, value: any) => {
-    setFields(fields.map(f => {
-      if (f.id === id) {
-        if (key === 'type' && (value === 'Radio' || value === 'Checkbox')) {
-          return { ...f, [key]: value, options: [''] }
-        } else if (key === 'type') {
-          const { options, ...rest } = f
-          return { ...rest, [key]: value }
+    setFields(
+      fields.map((f) => {
+        if (f.id === id) {
+          if (key === "type" && (value === "Radio" || value === "Checkbox")) {
+            return { ...f, [key]: value, options: [""] };
+          } else if (key === "type") {
+            const { options, ...rest } = f;
+            return { ...rest, [key]: value };
+          }
+          return { ...f, [key]: value };
         }
-        return { ...f, [key]: value }
-      }
-      return f
-    }))
-  }
+        return f;
+      })
+    );
+  };
 
   const handleRemoveField = (id: number) => {
-    setFields(fields.filter(f => f.id !== id))
-  }
+    setFields(fields.filter((f) => f.id !== id));
+  };
 
-  const handleOptionChange = (fieldId: number, index: number, value: string) => {
-    setFields(fields.map(f => {
-      if (f.id === fieldId && f.options) {
-        const newOptions = [...f.options]
-        newOptions[index] = value
-        return { ...f, options: newOptions }
-      }
-      return f
-    }))
-  }
+  const handleOptionChange = (
+    fieldId: number,
+    index: number,
+    value: string
+  ) => {
+    setFields(
+      fields.map((f) => {
+        if (f.id === fieldId && f.options) {
+          const newOptions = [...f.options];
+          newOptions[index] = value;
+          return { ...f, options: newOptions };
+        }
+        return f;
+      })
+    );
+  };
 
   const addOption = (fieldId: number) => {
-    setFields(fields.map(f => {
-      if (f.id === fieldId && f.options) {
-        return { ...f, options: [...f.options, ''] }
-      }
-      return f
-    }))
-  }
+    setFields(
+      fields.map((f) => {
+        if (f.id === fieldId && f.options) {
+          return { ...f, options: [...f.options, ""] };
+        }
+        return f;
+      })
+    );
+  };
 
   const removeOption = (fieldId: number, index: number) => {
-    setFields(fields.map(f => {
-      if (f.id === fieldId && f.options) {
-        const newOptions = f.options.filter((_, i) => i !== index)
-        return { ...f, options: newOptions }
-      }
-      return f
-    }))
-  }
+    setFields(
+      fields.map((f) => {
+        if (f.id === fieldId && f.options) {
+          const newOptions = f.options.filter((_, i) => i !== index);
+          return { ...f, options: newOptions };
+        }
+        return f;
+      })
+    );
+  };
 
   const handleCreateForm = () => {
-    console.log('Form Created:', { formName, details, fields })
-    setFormName('')
-    setDetails('')
-    setFields([])
-    setIsOpen(false)
-  }
+    console.log("Form Created:", { formName, details, fields });
+    setFormName("");
+    setDetails("");
+    setFields([]);
+    setIsOpen(false);
+  };
 
   return (
     <div className="w-full max-w-3xl space-y-6 border p-6 rounded-xl shadow-md mb-8">
@@ -95,7 +121,10 @@ export default function FormPanel({ setIsOpen }: Props) {
       </div>
       <div className="space-y-2">
         <Label>Form Description</Label>
-        <Textarea value={details} onChange={(e) => setDetails(e.target.value)} />
+        <Textarea
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
       </div>
 
       <div className="space-y-4">
@@ -107,14 +136,18 @@ export default function FormPanel({ setIsOpen }: Props) {
                 <Input
                   placeholder="Enter question label"
                   value={field.label}
-                  onChange={(e) => handleFieldChange(field.id, 'label', e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange(field.id, "label", e.target.value)
+                  }
                 />
               </div>
               <div className="flex-1 space-y-2">
                 <Label>Type</Label>
                 <Select
                   value={field.type}
-                  onValueChange={(val) => handleFieldChange(field.id, 'type', val)}
+                  onValueChange={(val) =>
+                    handleFieldChange(field.id, "type", val)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select field type" />
@@ -138,7 +171,7 @@ export default function FormPanel({ setIsOpen }: Props) {
               </Button>
             </div>
 
-            {(field.type === 'Radio' || field.type === 'Checkbox') && (
+            {(field.type === "Radio" || field.type === "Checkbox") && (
               <div className="space-y-2">
                 <Label>Options</Label>
                 {field.options?.map((opt, idx) => (
@@ -146,7 +179,9 @@ export default function FormPanel({ setIsOpen }: Props) {
                     <Input
                       placeholder={`Option ${idx + 1}`}
                       value={opt}
-                      onChange={(e) => handleOptionChange(field.id, idx, e.target.value)}
+                      onChange={(e) =>
+                        handleOptionChange(field.id, idx, e.target.value)
+                      }
                     />
                     <Button
                       size="icon"
@@ -180,5 +215,5 @@ export default function FormPanel({ setIsOpen }: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 }
