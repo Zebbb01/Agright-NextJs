@@ -1,4 +1,4 @@
-import { deleteRoleById, fetchRoles } from "@/app/api/helper/roleHelpers";
+import { deleteRoleById, fetchRoles } from "@/app/api/services/roleService";
 import { RoleType } from "@/types/role";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

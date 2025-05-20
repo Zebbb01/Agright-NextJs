@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { updateUser } from "@/app/api/helper/userHelpers";
+import { updateUser } from "@/app/api/services/userService";
 import { EditUserModalProps } from "@/types/auth";
 
 export function useEditUserForm({
@@ -62,7 +62,9 @@ export function useEditUserForm({
     setLoading(true);
 
     try {
-      const selectedRoleObject = roles.find((role) => role.name === selectedRole);
+      const selectedRoleObject = roles.find(
+        (role) => role.name === selectedRole
+      );
       const updated = await updateUser({
         id: editingUser.id,
         username,

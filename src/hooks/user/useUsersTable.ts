@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchUsersAndRoles, deleteUserById } from "@/app/api/helper/userHelpers";
+import {
+  fetchUsersAndRoles,
+  deleteUserById,
+} from "@/app/api/services/userService";
 import { UserType } from "@/types/user";
 import { RoleType } from "@/types/role";
 
@@ -27,7 +30,10 @@ export function useUsersTable() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to load users. Please try again.", {
-        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
         duration: 3000,
       });
     } finally {
@@ -82,15 +88,22 @@ export function useUsersTable() {
           duration: 2000,
         });
       } else {
-        toast.error(`Failed to delete user "${userToDelete.name}". Please try again.`, {
-          description: "There was an issue deleting the user from the system.",
-          duration: 3000,
-        });
+        toast.error(
+          `Failed to delete user "${userToDelete.name}". Please try again.`,
+          {
+            description:
+              "There was an issue deleting the user from the system.",
+            duration: 3000,
+          }
+        );
       }
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete user. Please try again.", {
-        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
         duration: 3000,
       });
     } finally {
