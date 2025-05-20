@@ -11,20 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { roles } from "@/data/auth";
-
 
 export default function Topbar({ title }: { title: string }) {
   const { isDark, toggle } = useDarkMode();
   const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
-  // Function to get role name based on roleId
-  const getRoleName = (roleId: string) => {
-    const role = roles.find((role) => role.id === roleId);
-    return role ? role.name : "Unknown Role"; // Fallback if role is not found
-  };
 
   const handleLogout = () => {
     logout();
@@ -67,7 +59,8 @@ export default function Topbar({ title }: { title: string }) {
                       {user.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {getRoleName(user.roleId)}
+                      {/* Display the role as-is from Prisma */}
+                      {user.role?.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {user.email}
