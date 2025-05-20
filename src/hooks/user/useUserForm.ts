@@ -1,11 +1,14 @@
 // src/hooks/useUserForm.ts
 import { useState } from "react";
 import { toast } from "sonner";
-import { createUser } from "@/app/api/helper/userHelpers";
+import { createUser } from "@/app/api/services/userService";
 import { UserType } from "@/types/user";
 import { RoleType } from "@/types/role";
 
-export function useUserForm(roles: RoleType[], onAddUser: (user: UserType) => void) {
+export function useUserForm(
+  roles: RoleType[],
+  onAddUser: (user: UserType) => void
+) {
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +22,8 @@ export function useUserForm(roles: RoleType[], onAddUser: (user: UserType) => vo
     if (!username.trim()) return setError("Username cannot be empty"), false;
     if (!email.trim()) return setError("Email cannot be empty"), false;
     if (!password.trim()) return setError("Password cannot be empty"), false;
-    if (password !== confirmPassword) return setError("Passwords do not match"), false;
+    if (password !== confirmPassword)
+      return setError("Passwords do not match"), false;
     if (!selectedRole) return setError("Please select a role"), false;
     return true;
   };
@@ -30,7 +34,12 @@ export function useUserForm(roles: RoleType[], onAddUser: (user: UserType) => vo
     setError(null);
     setLoading(true);
     try {
-      const newUser = await createUser({ username, email, password, roleName: selectedRole });
+      const newUser = await createUser({
+        username,
+        email,
+        password,
+        roleName: selectedRole,
+      });
       const createdRole = roles.find((role) => role.name === selectedRole);
       const userWithRole: UserType = { ...newUser, role: createdRole || null };
 
@@ -42,7 +51,8 @@ export function useUserForm(roles: RoleType[], onAddUser: (user: UserType) => vo
       handleClose();
     } catch (err) {
       toast.error("Failed to create user. Please try again.", {
-        description: err instanceof Error ? err.message : "An unexpected error occurred.",
+        description:
+          err instanceof Error ? err.message : "An unexpected error occurred.",
         duration: 3000,
       });
     } finally {
