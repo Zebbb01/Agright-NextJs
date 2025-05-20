@@ -6,18 +6,27 @@ import { useAuth } from "@/context/auth-context";
 import MapPanel from "@/components/widget/MapPanel";
 import ResponsesTable from "@/components/table/ResponsesTable";
 import { BarChartPanel } from "@/components/widget/BarChartPanel";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function DashboardHome() {
-  // const { isAuthenticated } = useAuth();
-  // const router = useRouter();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
 
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     router.push("/login");
-  //   }
-  // }, [isAuthenticated, router]);
+  useEffect(() => {
+    // Wait for auth state to finish loading
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
-  // if (!isAuthenticated) return null;
+  // Show loading while checking authentication
+  if (isLoading) {
+    return <div><Spinner /></div>;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
