@@ -1,12 +1,26 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { forms } from "@/data/form";
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+
+
+interface Form {
+  id: string;
+  name: string;
+}
 
 export default function FormSelector() {
   const router = useRouter();
+  const [forms, setForms] = useState<Form[]>([]);
+
+  useEffect(() => {
+    // Fetch all forms
+    fetch('/api/routes/form')
+      .then((res) => res.json())
+      .then((data) => setForms(data));
+  }, []);
 
   const handleSelectForm = (formId: string) => {
     router.push(`/dashboard/responses?formId=${formId}`);

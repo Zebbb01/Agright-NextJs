@@ -1,155 +1,171 @@
+// src/components/table/ResponsesTable.tsx
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { responses } from '@/data/response';
+import { RefreshCcw, Trash2 } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 10;
+interface Response {
+  id: number;
+  formId: number;
+  userId: number;
+  values: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
 
-type ResponsesTableProps = {
-  setIsCreating?: (open: boolean) => void;
-  showAddButton?: boolean;
-  formId?: string | null;
-  isAdmin?: boolean;
-};
+interface ResponsesTableProps {
+  // Make formId and setIsCreating optional, as they won't always be passed (e.g., on dashboard)
+  formId?: string;
+  setIsCreating?: (isCreating: boolean) => void;
+  isAdmin?: boolean; // Add the isAdmin prop
+}
 
-export default function ResponsesTable({
-  setIsCreating,
-  showAddButton = false,
-  formId,
-  isAdmin = false,
-}: ResponsesTableProps) {
-  const filteredResponses = isAdmin
-    ? responses
-    : responses.filter((r) => r.formId === formId);
+// Destructure isAdmin from props
+export default function ResponsesTable({ formId, setIsCreating, isAdmin }: ResponsesTableProps) {
+  const [responses, setResponses] = useState<Response[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(filteredResponses.length / ITEMS_PER_PAGE);
+  const fetchResponses = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let url = `/api/routes/form/response`; // Default URL to fetch ALL responses
 
-  const paginated = filteredResponses.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+      // If formId is provided, fetch responses for that specific form
+      if (formId) {
+        url = `/api/routes/form/response/by-form/${formId}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Error fetching responses: ${res.statusText}`);
+      }
+      const data = await res.json();
+      setResponses(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Failed to fetch responses:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteResponse = async (responseId: number) => {
+    if (!window.confirm("Are you sure you want to delete this response?")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/routes/form/response/${responseId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        const errorBody = await res.text();
+        try {
+          const errorJson = JSON.parse(errorBody);
+          throw new Error(`Failed to delete response: ${errorJson.details || errorJson.error || res.statusText}`);
+        } catch (parseError) {
+          throw new Error(`Failed to delete response: ${res.statusText}. Server response: ${errorBody}`);
+        }
+      }
+
+      fetchResponses(); // Re-fetch responses to update the table
+    } catch (error: any) {
+      console.error("Error deleting response:", error);
+      alert(`Error deleting response: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    // This useEffect will run when the component mounts and when formId changes.
+    // If formId is undefined (on the dashboard), it will call fetchResponses,
+    // which will then use the default '/api/routes/form/response' URL.
+    fetchResponses();
+  }, [formId]); // Depend on formId, so if it changes, data is re-fetched
+
+  const handleRefresh = () => {
+    fetchResponses();
+  };
+
+  if (loading) {
+    return <p className="text-center text-gray-500">Loading responses...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">Error: {error}</p>;
+  }
+
+  if (responses.length === 0) {
+    return (
+      <div className="text-center text-gray-500">
+        {/* Dynamic message based on whether a specific formId is being viewed */}
+        <p>No responses found {formId ? `for this form` : `yet`}.</p>
+        <Button onClick={handleRefresh} className="mt-4 flex items-center mx-auto gap-2">
+          <RefreshCcw size={16} /> Refresh Responses
+        </Button>
+      </div>
+    );
+  }
+
+  // Ensure allFieldLabels is robust enough for multiple forms with varying fields
+  const allFieldLabels = Array.from(
+    new Set(responses.flatMap((res) => Object.keys(res.values)))
   );
-
-  // Dynamically get column headers from first response, excluding Latitude and Longitude
-  const allKeys = filteredResponses[0]
-    ? Object.keys(filteredResponses[0].values).filter(
-        (key) => key !== 'Latitude' && key !== 'Longitude'
-      )
-    : [];
-
-  const hasLocationColumn = filteredResponses.some(
-    (r) => 'Latitude' in r.values && 'Longitude' in r.values
-  );
-    
 
   return (
     <div className="space-y-4">
-      {showAddButton && setIsCreating && (
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="ml-auto flex items-center gap-2"
-        >
-          <Plus size={16} /> Add Response
+      <div className="flex justify-end">
+        <Button onClick={handleRefresh} className="flex items-center gap-2">
+          <RefreshCcw size={16} /> Refresh
         </Button>
-      )}
-
+      </div>
       <Table>
         <TableHeader>
-        <TableRow>
-          {allKeys.map((key) => (
-            <TableHead key={key}>{key}</TableHead>
-          ))}
-          {hasLocationColumn && <TableHead>Location(Lat,Long)</TableHead>}
-        </TableRow>
+          <TableRow>
+            <TableHead>Response ID</TableHead><TableHead>User</TableHead>{allFieldLabels.map((label) => (<TableHead key={label}>{label}</TableHead>))}<TableHead>Submitted At</TableHead><TableHead>Last Updated</TableHead><TableHead>Status</TableHead><TableHead>Actions</TableHead>
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {paginated.map((r, i) => (
-            <TableRow key={i}>
-              {allKeys.map((key) => {
-                const value = r.values[key as keyof typeof r.values];
-                if (key === 'Upload Photo') {
-                  return (
-                    <TableCell key={key}>
-                      <a
-                        href={`/${value}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline block"
-                      >
-                        {String(value).split('/').pop()}
-                      </a>
-                    </TableCell>
-                  );
-                } else if (key === 'Block' && Array.isArray(value)) {
-                  return (
-                    <TableCell key={key}>
-                      {value.sort((a, b) => +a - +b).join(', ')}
-                    </TableCell>
-                  );
-                } else {
-                  return <TableCell key={key}>{String(value)}</TableCell>;
-                }
-              })}
-
-              {/* Combine Latitude and Longitude into a single Location cell */}
-              {hasLocationColumn && 'Latitude' in r.values && 'Longitude' in r.values ? (
-                <TableCell>
-                  {r.values['Latitude']}, {r.values['Longitude']}
-                </TableCell>
-              ) : hasLocationColumn ? (
-                <TableCell />
-              ) : null}
+          {responses.map((response) => (
+            <TableRow key={response.id}>
+              <TableCell className="font-medium">{response.id}</TableCell><TableCell>{response.user?.name || response.userId}</TableCell>
+              {allFieldLabels.map((label) => (<TableCell key={label}>{Array.isArray(response.values[label]) ? response.values[label].join(', ') : response.values[label]?.toString() || '-'}</TableCell>))}
+              <TableCell>{new Date(response.createdAt).toLocaleString()}</TableCell>
+              <TableCell>{new Date(response.updatedAt).toLocaleString()}</TableCell>
+              <TableCell>{response.deletedAt ? `Deleted: ${new Date(response.deletedAt).toLocaleString()}` : 'Active'}</TableCell>
+              <TableCell>
+                {/* Only show delete button if isAdmin is true AND the response is not deleted */}
+                {isAdmin && !response.deletedAt && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteResponse(response.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={allKeys.length + 1}>
-              Total Responses: {filteredResponses.length}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
-
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              Page {currentPage} of {totalPages}
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
-                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
     </div>
   );
 }

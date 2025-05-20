@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import { Form } from "@/types/form";
 
 type FormField = {
   id: number;
@@ -23,6 +24,7 @@ type FormField = {
 
 type Props = {
   setIsOpen: (open: boolean) => void;
+  form: Form;
 };
 
 const inputTypes = [
@@ -105,12 +107,49 @@ export default function FormPanel({ setIsOpen }: Props) {
     );
   };
 
-  const handleCreateForm = () => {
-    console.log("Form Created:", { formName, details, fields });
-    setFormName("");
-    setDetails("");
-    setFields([]);
-    setIsOpen(false);
+  const handleCreateForm = async () => {
+    if (!formName.trim()) return;
+
+    try {
+      // Step 1: Create the form
+      const res = await fetch("/api/routes/form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName,
+          details: details,
+          date: new Date(),
+        }),
+      });
+
+      const createdForm = await res.json();
+
+      // Step 2: Create form options
+      await Promise.all(
+        fields.map((field) =>
+          fetch("/api/routes/form/options", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              formId: createdForm.id,
+              label: field.label,
+              type: field.type,
+              options: field.options || [],
+            }),
+          })
+        )
+      );
+
+      console.log("Form and fields saved!");
+
+      // Clear inputs
+      setFormName("");
+      setDetails("");
+      setFields([]);
+      setIsOpen(false);
+    } catch (err) {
+      console.error("Failed to save form:", err);
+    }
   };
 
   return (
