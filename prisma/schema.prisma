@@ -6,10 +6,68 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  roleId   Int
+  role     Role   @relation(fields: [roleId], references: [id])
+
+  response Response[]
+}
+
+model Role {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  status Int
+  users  User[]
+  // Removed permissions field
+}
+
+model Form {
+  id        Int          @id @default(autoincrement())
+  name      String
+  date      DateTime
+  details   String
+  options   FormOption[]
+  responses Response[]
+}
+
+model FormOption {
+  id      Int      @id @default(autoincrement())
+  formId  Int
+  label   String
+  type    String
+  options String[] @default([]) // Use this for radio/checkbox choices
+  form    Form     @relation(fields: [formId], references: [id])
+}
+
+model Location {
+  id            Int      @id @default(autoincrement())
+  latitude      Float
+  longitude     Float
+  farmName      String
+  terrain       String
+  typeOfDisease String
+  blocks        String[]
+  image         String
+}
+
+model Response {
+  id        Int       @id @default(autoincrement())
+  formId    Int
+  userId    Int
+  values    Json
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  form      Form      @relation(fields: [formId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }
