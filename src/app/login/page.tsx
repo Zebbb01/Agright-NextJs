@@ -1,5 +1,5 @@
 import Topbar from "@/components/app-topbar"
-import { LoginForm } from "@/components/login-form"
+import { LoginForm } from "@/components/widget/auth/login-form"
 
 export default function LoginPage() {
   return (
