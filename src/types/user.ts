@@ -8,3 +8,9 @@ export type UserType = {
     status: number;
   } | null;
 };
+
+export interface RoleType {
+  id: number;
+  name: string;
+  status: number;
+}
