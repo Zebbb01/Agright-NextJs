@@ -1,9 +1,9 @@
 // src/app/dashboard/forms/[formId]/page.tsx
 
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import FormPanelContainer from '@/components/container/FormPanelContainer';
+import { useParams } from "next/navigation";
+import FormPanelContainer from "@/components/widget/form/FormPanelContainer";
 
 export default function FormPage() {
   const params = useParams();

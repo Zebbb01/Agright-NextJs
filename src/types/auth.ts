@@ -1,5 +1,4 @@
-import { RoleType } from './role';
-import { UserType } from './user'
+import { UserType, RoleType } from './user'
 export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean; // add this
