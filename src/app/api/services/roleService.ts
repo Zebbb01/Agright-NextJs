@@ -1,4 +1,4 @@
-import type { RoleType } from "@/types/role";
+import type { RoleType } from "@/types/user";
 
 export async function fetchRoles(): Promise<RoleType[]> {
   const res = await fetch("/api/routes/auth/roles");
