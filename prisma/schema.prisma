@@ -15,13 +15,13 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  name      String
-  email     String     @unique
-  password  String
-  roleId    Int
-  role      Role       @relation(fields: [roleId], references: [id])
-  response  Response[]
+  id         Int        @id @default(autoincrement())
+  name       String
+  email      String     @unique
+  password   String
+  roleId     Int
+  role       Role       @relation(fields: [roleId], references: [id])
+  response   Response[]
 }
 
 model Role {
@@ -32,21 +32,22 @@ model Role {
 }
 
 model Form {
-  id        Int          @id @default(autoincrement())
-  name      String
-  date      DateTime
-  details   String
-  options   FormOption[]
-  responses Response[]
+  id         Int          @id @default(autoincrement())
+  name       String
+  date       DateTime
+  details    String
+  options    FormOption[]
+  responses  Response[]
 }
 
 model FormOption {
-  id     Int      @id @default(autoincrement())
-  formId Int
-  label  String
-  type   String
-  options String[] @default([]) // Use this for radio/checkbox choices
-  form   Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  id       Int      @id @default(autoincrement())
+  formId   Int
+  label    String
+  type     String
+  options  String[] @default([]) // Use this for radio/checkbox choices
+  required Boolean  @default(false) // <--- ADD THIS LINE
+  form     Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
 }
 
 model Location {
@@ -57,42 +58,43 @@ model Location {
   terrain       String
   typeOfDisease String
   blocks        String[]
+  takenAt       DateTime?     // Add this line for the image taken date
   imageUploads  ImageUpload[] // A location can have multiple image uploads
 }
 
 model ImageUpload {
-  id            Int        @id @default(autoincrement())
-  publicId      String     @unique // Cloudinary public_id (unique identifier)
-  secureUrl     String     // Cloudinary secure_url
-  format        String?
-  width         Int?
-  height        Int?
-  resourceType  String?    // e.g., "image", "video", "raw"
+  id               Int        @id @default(autoincrement())
+  publicId         String     @unique // Cloudinary public_id (unique identifier)
+  secureUrl        String     // Cloudinary secure_url
+  format           String?
+  width            Int?
+  height           Int?
+  resourceType     String?    // e.g., "image", "video", "raw"
   originalFilename String?
-  
+
   // Optional: If you want to store EXIF data directly from Cloudinary
   // This will be a JSON object, so you'd parse it in your application
-  exifData      Json? 
+  exifData         Json?
 
   // Link to Location model
-  locationId    Int?       // Optional: An image upload might not always have a specific location
-  location      Location?  @relation(fields: [locationId], references: [id])
+  locationId       Int?       // Optional: An image upload might not always have a specific location
+  location         Location?  @relation(fields: [locationId], references: [id])
 
-  createdAt     DateTime   @default(now())
+  createdAt        DateTime   @default(now())
 
   Response Response[]
 }
 
 model Response {
-  id        Int         @id @default(autoincrement())
-  formId    Int
-  userId    Int
-  values    Json        // This will now mostly contain references or simple data
-  createdAt DateTime    @default(now())
-  deletedAt DateTime?
-  form      Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [userId], references: [id])
-  
+  id            Int          @id @default(autoincrement())
+  formId        Int
+  userId        Int
+  values        Json         // This will now mostly contain references or simple data
+  createdAt     DateTime     @default(now())
+  deletedAt     DateTime?
+  form          Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id])
+
   // If a response directly involves an image upload, you can link it here
   // Otherwise, the `values` JSON might contain the ImageUpload ID for dynamic fields
   imageUploadId Int?

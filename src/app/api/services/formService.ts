@@ -51,11 +51,13 @@ export const getCloudinarySignature = async (
 /**
  * Uploads a file to Cloudinary and saves its details to your backend.
  * @param file The file to upload.
+ * @param formResponseValues The current form data to associate with the image.
  * @returns A promise that resolves to the saved ImageUpload record from your DB.
  * @throws Error if the upload fails.
  */
 export const uploadFileToCloudinaryService = async (
-  file: File
+  file: File,
+  formResponseValues?: Record<string, any> // Add formResponseValues parameter
 ): Promise<{
   id: number;
   publicId: string;
@@ -74,16 +76,8 @@ export const uploadFileToCloudinaryService = async (
   const uploadParams: Record<string, any> = {
     folder: "form_uploads", // Optional: organize your uploads within Cloudinary
     upload_preset: CLOUDINARY_UPLOAD_PRESET,
-    // REMOVE THIS LINE: image_metadata: true, // <--- THIS IS THE CULPRIT FOR UNSIGNED UPLOADS
-    timestamp: Math.round(new Date().getTime() / 1000), // timestamp is also usually not needed for unsigned presets unless specifically configured
+    timestamp: Math.round(new Date().getTime() / 1000),
   };
-
-  // If you need signed uploads, integrate getCloudinarySignature here:
-  /*
-  const { signature } = await getCloudinarySignature(uploadParams);
-  uploadParams.signature = signature;
-  uploadParams.api_key = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY; // Ensure this env var is available client-side if using signed uploads
-  */
 
   const formData = new FormData();
   formData.append("file", file);
@@ -122,9 +116,8 @@ export const uploadFileToCloudinaryService = async (
       height: cloudinaryData.height,
       resource_type: cloudinaryData.resource_type,
       original_filename: cloudinaryData.original_filename,
-      exifData: cloudinaryData.image_metadata, // Cloudinary *should* still return image_metadata if preset has it enabled
-      // We are *not* passing locationData here, as the backend will derive it from exifData
-      // or associate with explicit form input if provided.
+      exifData: cloudinaryData.image_metadata,
+      formResponseValues: formResponseValues, // <--- Pass the form data here
     }),
   });
 
@@ -139,7 +132,6 @@ export const uploadFileToCloudinaryService = async (
   }
 
   const savedImageUpload = await saveToDbRes.json();
-  // Return the saved record from your DB, including its ID
   return savedImageUpload.imageUpload;
 };
 
@@ -223,6 +215,7 @@ export const createFormAndOptionsService = async (
         label: field.label,
         type: field.type,
         options: field.options || [],
+        required: field.required,
       }),
     })
   );

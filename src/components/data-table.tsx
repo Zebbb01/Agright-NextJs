@@ -26,7 +26,7 @@ import {
 import { Spinner } from "./ui/spinner";
 import { DataTableProps, DataTableColumn } from "@/types/data-table"; // Ensure DataTableProps and DataTableColumn are imported from here
 
-const DEFAULT_MAX_LENGTH = 20;
+const DEFAULT_MAX_LENGTH = 50;
 
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) {

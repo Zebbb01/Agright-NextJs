@@ -4,8 +4,6 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-import { SearchForm } from "@/components/search-form";
-import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +22,6 @@ import {
   BarChart3,
   MapPinned,
   FileEdit,
-  FileText,
   ClipboardList,
   Users2,
   ShieldCheck,
@@ -68,7 +65,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
   return (
-    <Sidebar {...props} className="w-64 border-r">
+    <Sidebar {...props}>
       <SidebarHeader>
         <div className="flex items-center justify-between">
           {/* Logo + Title */}

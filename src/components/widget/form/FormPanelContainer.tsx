@@ -95,14 +95,32 @@ export default function FormPanelContainer({ formId }: Props) {
 
   if (forms.length === 0) {
     return (
-      <div className="text-center text-gray-500 space-y-2">
-        <p>No forms found yet.</p>
-        <Button
-          onClick={handleRefreshForms}
-          className="mt-4 flex items-center mx-auto gap-2"
-        >
-          <RefreshCcw size={16} /> Refresh Forms
-        </Button>
+      <div className="space-y-6 text-center text-gray-500">
+        {isCreating ? (
+          <div className="flex justify-center mx-auto mb-4">
+            <FormPanel setIsOpen={setIsCreating} />
+          </div>
+        ) : (
+          <>
+            <p>No forms found yet.</p>
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={handleRefreshForms}
+                className="flex items-center gap-2"
+              >
+                <RefreshCcw size={16} /> Refresh Forms
+              </Button>
+              {isAdmin && (
+                <Button
+                  onClick={() => setIsCreating(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus size={16} /> Create New Form
+                </Button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     );
   }

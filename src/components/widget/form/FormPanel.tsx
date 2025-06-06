@@ -13,15 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner"; // Assuming you have a Spinner
-import { useFormBuilder } from "@/hooks/form/useFormBuilder"; // Adjust the import path as necessary
+import { Spinner } from "@/components/ui/spinner";
+import { useFormBuilder } from "@/hooks/form/useFormBuilder";
 
 type Props = {
   setIsOpen: (open: boolean) => void;
-  // form: Form; // This prop seems unused in the original code for form creation,
-  // it might be for an "edit form" panel.
-  // If it's for editing, you'd need to pass the form details to the hook for initialization.
-  // For now, assuming this panel is purely for creating new forms.
 };
 
 export default function FormPanel({ setIsOpen }: Props) {
@@ -37,13 +33,14 @@ export default function FormPanel({ setIsOpen }: Props) {
     handleOptionChange,
     addOption,
     removeOption,
+    handleRequiredChange, // <--- IMPORT THIS
     handleCreateForm,
     creatingForm,
     createFormError,
-    resetFormBuilder, // Use reset function on success/cancel
+    resetFormBuilder,
   } = useFormBuilder({
     onFormCreated: () => {
-      setIsOpen(false); // Close panel on success
+      setIsOpen(false);
     },
   });
 
@@ -52,7 +49,7 @@ export default function FormPanel({ setIsOpen }: Props) {
   };
 
   const onCancel = () => {
-    resetFormBuilder(); // Reset state on cancel
+    resetFormBuilder();
     setIsOpen(false);
   };
 
@@ -68,12 +65,13 @@ export default function FormPanel({ setIsOpen }: Props) {
   return (
     <div className="w-full max-w-3xl space-y-6 border p-6 rounded-xl shadow-md mb-8">
       <div className="space-y-2">
-        <Label>Form Title</Label>
-        <Input value={formName} onChange={(e) => setFormName(e.target.value)} />
+        <Label htmlFor="form-title">Form Title</Label>
+        <Input id="form-title" value={formName} onChange={(e) => setFormName(e.target.value)} />
       </div>
       <div className="space-y-2">
-        <Label>Form Description</Label>
+        <Label htmlFor="form-description">Form Description</Label>
         <Textarea
+          id="form-description"
           value={details}
           onChange={(e) => setDetails(e.target.value)}
         />
@@ -82,10 +80,11 @@ export default function FormPanel({ setIsOpen }: Props) {
       <div className="space-y-4">
         {fields.map((field) => (
           <div key={field.id} className="border p-4 rounded-lg space-y-4">
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex justify-between items-start gap-4">
               <div className="flex-1 space-y-2">
-                <Label>Question Label</Label>
+                <Label htmlFor={`label-${field.id}`}>Question Label</Label>
                 <Input
+                  id={`label-${field.id}`}
                   placeholder="Enter question label"
                   value={field.label}
                   onChange={(e) =>
@@ -94,14 +93,14 @@ export default function FormPanel({ setIsOpen }: Props) {
                 />
               </div>
               <div className="flex-1 space-y-2">
-                <Label>Type</Label>
+                <Label htmlFor={`type-${field.id}`}>Type</Label>
                 <Select
                   value={field.type}
                   onValueChange={(val) =>
                     handleFieldChange(field.id, "type", val)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id={`type-${field.id}`}>
                     <SelectValue placeholder="Select field type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -113,6 +112,19 @@ export default function FormPanel({ setIsOpen }: Props) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* REQUIRED CHECKBOX */}
+              <div className="flex items-center space-x-2 mt-6">
+                <input
+                  type="checkbox"
+                  id={`required-${field.id}`}
+                  checked={field.required || false} // Ensure it's never undefined
+                  onChange={(e) => handleRequiredChange(field.id, e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor={`required-${field.id}`} className="text-sm">Required</Label>
+              </div>
+
               <Button
                 size="icon"
                 variant="ghost"

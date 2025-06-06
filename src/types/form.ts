@@ -8,6 +8,7 @@ export interface FormOption {
   label: string;
   type: string;
   options?: string[];
+  required: boolean;
 }
 
 export interface FormData {
@@ -32,6 +33,7 @@ export interface FormField {
   type: string;
   label: string;
   options?: string[];
+  required: boolean;
 }
 
 

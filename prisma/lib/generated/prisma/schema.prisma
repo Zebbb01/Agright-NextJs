@@ -41,12 +41,13 @@ model Form {
 }
 
 model FormOption {
-  id      Int      @id @default(autoincrement())
-  formId  Int
-  label   String
-  type    String
-  options String[] @default([]) // Use this for radio/checkbox choices
-  form    Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  id       Int      @id @default(autoincrement())
+  formId   Int
+  label    String
+  type     String
+  options  String[] @default([]) // Use this for radio/checkbox choices
+  required Boolean  @default(false) // <--- ADD THIS LINE
+  form     Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
 }
 
 model Location {
@@ -57,6 +58,7 @@ model Location {
   terrain       String
   typeOfDisease String
   blocks        String[]
+  takenAt       DateTime? // Add this line for the image taken date
   imageUploads  ImageUpload[] // A location can have multiple image uploads
 }
 

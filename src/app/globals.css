@@ -114,6 +114,8 @@
   --sidebar-hover: oklch(0.3 0 0); /* dark mode */
 }
 
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

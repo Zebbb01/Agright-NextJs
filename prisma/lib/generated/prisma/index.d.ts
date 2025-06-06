@@ -301,8 +301,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.7.0
-   * Query Engine version: 3cff47a7f5d65c3ea74883f1d736e41d68ce91ed
+   * Prisma Client JS version: 6.8.2
+   * Query Engine version: 2060c79ba17c6bb9f5823312b6f6b7f4a845738e
    */
   export type PrismaVersion = {
     client: string
@@ -4932,6 +4932,7 @@ export namespace Prisma {
     formId: number | null
     label: string | null
     type: string | null
+    required: boolean | null
   }
 
   export type FormOptionMaxAggregateOutputType = {
@@ -4939,6 +4940,7 @@ export namespace Prisma {
     formId: number | null
     label: string | null
     type: string | null
+    required: boolean | null
   }
 
   export type FormOptionCountAggregateOutputType = {
@@ -4947,6 +4949,7 @@ export namespace Prisma {
     label: number
     type: number
     options: number
+    required: number
     _all: number
   }
 
@@ -4966,6 +4969,7 @@ export namespace Prisma {
     formId?: true
     label?: true
     type?: true
+    required?: true
   }
 
   export type FormOptionMaxAggregateInputType = {
@@ -4973,6 +4977,7 @@ export namespace Prisma {
     formId?: true
     label?: true
     type?: true
+    required?: true
   }
 
   export type FormOptionCountAggregateInputType = {
@@ -4981,6 +4986,7 @@ export namespace Prisma {
     label?: true
     type?: true
     options?: true
+    required?: true
     _all?: true
   }
 
@@ -5076,6 +5082,7 @@ export namespace Prisma {
     label: string
     type: string
     options: string[]
+    required: boolean
     _count: FormOptionCountAggregateOutputType | null
     _avg: FormOptionAvgAggregateOutputType | null
     _sum: FormOptionSumAggregateOutputType | null
@@ -5103,6 +5110,7 @@ export namespace Prisma {
     label?: boolean
     type?: boolean
     options?: boolean
+    required?: boolean
     form?: boolean | FormDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["formOption"]>
 
@@ -5112,6 +5120,7 @@ export namespace Prisma {
     label?: boolean
     type?: boolean
     options?: boolean
+    required?: boolean
     form?: boolean | FormDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["formOption"]>
 
@@ -5121,6 +5130,7 @@ export namespace Prisma {
     label?: boolean
     type?: boolean
     options?: boolean
+    required?: boolean
     form?: boolean | FormDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["formOption"]>
 
@@ -5130,9 +5140,10 @@ export namespace Prisma {
     label?: boolean
     type?: boolean
     options?: boolean
+    required?: boolean
   }
 
-  export type FormOptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "formId" | "label" | "type" | "options", ExtArgs["result"]["formOption"]>
+  export type FormOptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "formId" | "label" | "type" | "options" | "required", ExtArgs["result"]["formOption"]>
   export type FormOptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     form?: boolean | FormDefaultArgs<ExtArgs>
   }
@@ -5154,6 +5165,7 @@ export namespace Prisma {
       label: string
       type: string
       options: string[]
+      required: boolean
     }, ExtArgs["result"]["formOption"]>
     composites: {}
   }
@@ -5583,6 +5595,7 @@ export namespace Prisma {
     readonly label: FieldRef<"FormOption", 'String'>
     readonly type: FieldRef<"FormOption", 'String'>
     readonly options: FieldRef<"FormOption", 'String[]'>
+    readonly required: FieldRef<"FormOption", 'Boolean'>
   }
     
 
@@ -6028,6 +6041,7 @@ export namespace Prisma {
     farmName: string | null
     terrain: string | null
     typeOfDisease: string | null
+    takenAt: Date | null
   }
 
   export type LocationMaxAggregateOutputType = {
@@ -6037,6 +6051,7 @@ export namespace Prisma {
     farmName: string | null
     terrain: string | null
     typeOfDisease: string | null
+    takenAt: Date | null
   }
 
   export type LocationCountAggregateOutputType = {
@@ -6047,6 +6062,7 @@ export namespace Prisma {
     terrain: number
     typeOfDisease: number
     blocks: number
+    takenAt: number
     _all: number
   }
 
@@ -6070,6 +6086,7 @@ export namespace Prisma {
     farmName?: true
     terrain?: true
     typeOfDisease?: true
+    takenAt?: true
   }
 
   export type LocationMaxAggregateInputType = {
@@ -6079,6 +6096,7 @@ export namespace Prisma {
     farmName?: true
     terrain?: true
     typeOfDisease?: true
+    takenAt?: true
   }
 
   export type LocationCountAggregateInputType = {
@@ -6089,6 +6107,7 @@ export namespace Prisma {
     terrain?: true
     typeOfDisease?: true
     blocks?: true
+    takenAt?: true
     _all?: true
   }
 
@@ -6186,6 +6205,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks: string[]
+    takenAt: Date | null
     _count: LocationCountAggregateOutputType | null
     _avg: LocationAvgAggregateOutputType | null
     _sum: LocationSumAggregateOutputType | null
@@ -6215,6 +6235,7 @@ export namespace Prisma {
     terrain?: boolean
     typeOfDisease?: boolean
     blocks?: boolean
+    takenAt?: boolean
     imageUploads?: boolean | Location$imageUploadsArgs<ExtArgs>
     _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["location"]>
@@ -6227,6 +6248,7 @@ export namespace Prisma {
     terrain?: boolean
     typeOfDisease?: boolean
     blocks?: boolean
+    takenAt?: boolean
   }, ExtArgs["result"]["location"]>
 
   export type LocationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6237,6 +6259,7 @@ export namespace Prisma {
     terrain?: boolean
     typeOfDisease?: boolean
     blocks?: boolean
+    takenAt?: boolean
   }, ExtArgs["result"]["location"]>
 
   export type LocationSelectScalar = {
@@ -6247,9 +6270,10 @@ export namespace Prisma {
     terrain?: boolean
     typeOfDisease?: boolean
     blocks?: boolean
+    takenAt?: boolean
   }
 
-  export type LocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "latitude" | "longitude" | "farmName" | "terrain" | "typeOfDisease" | "blocks", ExtArgs["result"]["location"]>
+  export type LocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "latitude" | "longitude" | "farmName" | "terrain" | "typeOfDisease" | "blocks" | "takenAt", ExtArgs["result"]["location"]>
   export type LocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     imageUploads?: boolean | Location$imageUploadsArgs<ExtArgs>
     _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
@@ -6270,6 +6294,7 @@ export namespace Prisma {
       terrain: string
       typeOfDisease: string
       blocks: string[]
+      takenAt: Date | null
     }, ExtArgs["result"]["location"]>
     composites: {}
   }
@@ -6701,6 +6726,7 @@ export namespace Prisma {
     readonly terrain: FieldRef<"Location", 'String'>
     readonly typeOfDisease: FieldRef<"Location", 'String'>
     readonly blocks: FieldRef<"Location", 'String[]'>
+    readonly takenAt: FieldRef<"Location", 'DateTime'>
   }
     
 
@@ -9568,7 +9594,8 @@ export namespace Prisma {
     formId: 'formId',
     label: 'label',
     type: 'type',
-    options: 'options'
+    options: 'options',
+    required: 'required'
   };
 
   export type FormOptionScalarFieldEnum = (typeof FormOptionScalarFieldEnum)[keyof typeof FormOptionScalarFieldEnum]
@@ -9581,7 +9608,8 @@ export namespace Prisma {
     farmName: 'farmName',
     terrain: 'terrain',
     typeOfDisease: 'typeOfDisease',
-    blocks: 'blocks'
+    blocks: 'blocks',
+    takenAt: 'takenAt'
   };
 
   export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
@@ -9648,6 +9676,14 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -9655,14 +9691,6 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
-
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -9709,6 +9737,13 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -9914,6 +9949,7 @@ export namespace Prisma {
     label?: StringFilter<"FormOption"> | string
     type?: StringFilter<"FormOption"> | string
     options?: StringNullableListFilter<"FormOption">
+    required?: BoolFilter<"FormOption"> | boolean
     form?: XOR<FormScalarRelationFilter, FormWhereInput>
   }
 
@@ -9923,6 +9959,7 @@ export namespace Prisma {
     label?: SortOrder
     type?: SortOrder
     options?: SortOrder
+    required?: SortOrder
     form?: FormOrderByWithRelationInput
   }
 
@@ -9935,6 +9972,7 @@ export namespace Prisma {
     label?: StringFilter<"FormOption"> | string
     type?: StringFilter<"FormOption"> | string
     options?: StringNullableListFilter<"FormOption">
+    required?: BoolFilter<"FormOption"> | boolean
     form?: XOR<FormScalarRelationFilter, FormWhereInput>
   }, "id">
 
@@ -9944,6 +9982,7 @@ export namespace Prisma {
     label?: SortOrder
     type?: SortOrder
     options?: SortOrder
+    required?: SortOrder
     _count?: FormOptionCountOrderByAggregateInput
     _avg?: FormOptionAvgOrderByAggregateInput
     _max?: FormOptionMaxOrderByAggregateInput
@@ -9960,6 +9999,7 @@ export namespace Prisma {
     label?: StringWithAggregatesFilter<"FormOption"> | string
     type?: StringWithAggregatesFilter<"FormOption"> | string
     options?: StringNullableListFilter<"FormOption">
+    required?: BoolWithAggregatesFilter<"FormOption"> | boolean
   }
 
   export type LocationWhereInput = {
@@ -9973,6 +10013,7 @@ export namespace Prisma {
     terrain?: StringFilter<"Location"> | string
     typeOfDisease?: StringFilter<"Location"> | string
     blocks?: StringNullableListFilter<"Location">
+    takenAt?: DateTimeNullableFilter<"Location"> | Date | string | null
     imageUploads?: ImageUploadListRelationFilter
   }
 
@@ -9984,6 +10025,7 @@ export namespace Prisma {
     terrain?: SortOrder
     typeOfDisease?: SortOrder
     blocks?: SortOrder
+    takenAt?: SortOrderInput | SortOrder
     imageUploads?: ImageUploadOrderByRelationAggregateInput
   }
 
@@ -9998,6 +10040,7 @@ export namespace Prisma {
     terrain?: StringFilter<"Location"> | string
     typeOfDisease?: StringFilter<"Location"> | string
     blocks?: StringNullableListFilter<"Location">
+    takenAt?: DateTimeNullableFilter<"Location"> | Date | string | null
     imageUploads?: ImageUploadListRelationFilter
   }, "id">
 
@@ -10009,6 +10052,7 @@ export namespace Prisma {
     terrain?: SortOrder
     typeOfDisease?: SortOrder
     blocks?: SortOrder
+    takenAt?: SortOrderInput | SortOrder
     _count?: LocationCountOrderByAggregateInput
     _avg?: LocationAvgOrderByAggregateInput
     _max?: LocationMaxOrderByAggregateInput
@@ -10027,6 +10071,7 @@ export namespace Prisma {
     terrain?: StringWithAggregatesFilter<"Location"> | string
     typeOfDisease?: StringWithAggregatesFilter<"Location"> | string
     blocks?: StringNullableListFilter<"Location">
+    takenAt?: DateTimeNullableWithAggregatesFilter<"Location"> | Date | string | null
   }
 
   export type ImageUploadWhereInput = {
@@ -10349,6 +10394,7 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
     form: FormCreateNestedOneWithoutOptionsInput
   }
 
@@ -10358,12 +10404,14 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
   }
 
   export type FormOptionUpdateInput = {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
     form?: FormUpdateOneRequiredWithoutOptionsNestedInput
   }
 
@@ -10373,6 +10421,7 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type FormOptionCreateManyInput = {
@@ -10381,12 +10430,14 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
   }
 
   export type FormOptionUpdateManyMutationInput = {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type FormOptionUncheckedUpdateManyInput = {
@@ -10395,6 +10446,7 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type LocationCreateInput = {
@@ -10404,6 +10456,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks?: LocationCreateblocksInput | string[]
+    takenAt?: Date | string | null
     imageUploads?: ImageUploadCreateNestedManyWithoutLocationInput
   }
 
@@ -10415,6 +10468,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks?: LocationCreateblocksInput | string[]
+    takenAt?: Date | string | null
     imageUploads?: ImageUploadUncheckedCreateNestedManyWithoutLocationInput
   }
 
@@ -10425,6 +10479,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     imageUploads?: ImageUploadUpdateManyWithoutLocationNestedInput
   }
 
@@ -10436,6 +10491,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     imageUploads?: ImageUploadUncheckedUpdateManyWithoutLocationNestedInput
   }
 
@@ -10447,6 +10503,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks?: LocationCreateblocksInput | string[]
+    takenAt?: Date | string | null
   }
 
   export type LocationUpdateManyMutationInput = {
@@ -10456,6 +10513,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type LocationUncheckedUpdateManyInput = {
@@ -10466,6 +10524,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ImageUploadCreateInput = {
@@ -10849,6 +10908,11 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type FormScalarRelationFilter = {
     is?: FormWhereInput
     isNot?: FormWhereInput
@@ -10860,6 +10924,7 @@ export namespace Prisma {
     label?: SortOrder
     type?: SortOrder
     options?: SortOrder
+    required?: SortOrder
   }
 
   export type FormOptionAvgOrderByAggregateInput = {
@@ -10872,6 +10937,7 @@ export namespace Prisma {
     formId?: SortOrder
     label?: SortOrder
     type?: SortOrder
+    required?: SortOrder
   }
 
   export type FormOptionMinOrderByAggregateInput = {
@@ -10879,11 +10945,20 @@ export namespace Prisma {
     formId?: SortOrder
     label?: SortOrder
     type?: SortOrder
+    required?: SortOrder
   }
 
   export type FormOptionSumOrderByAggregateInput = {
     id?: SortOrder
     formId?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -10897,10 +10972,26 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type ImageUploadListRelationFilter = {
     every?: ImageUploadWhereInput
     some?: ImageUploadWhereInput
     none?: ImageUploadWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type ImageUploadOrderByRelationAggregateInput = {
@@ -10915,6 +11006,7 @@ export namespace Prisma {
     terrain?: SortOrder
     typeOfDisease?: SortOrder
     blocks?: SortOrder
+    takenAt?: SortOrder
   }
 
   export type LocationAvgOrderByAggregateInput = {
@@ -10930,6 +11022,7 @@ export namespace Prisma {
     farmName?: SortOrder
     terrain?: SortOrder
     typeOfDisease?: SortOrder
+    takenAt?: SortOrder
   }
 
   export type LocationMinOrderByAggregateInput = {
@@ -10939,6 +11032,7 @@ export namespace Prisma {
     farmName?: SortOrder
     terrain?: SortOrder
     typeOfDisease?: SortOrder
+    takenAt?: SortOrder
   }
 
   export type LocationSumOrderByAggregateInput = {
@@ -10961,6 +11055,20 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -11015,11 +11123,6 @@ export namespace Prisma {
   export type LocationNullableScalarRelationFilter = {
     is?: LocationWhereInput | null
     isNot?: LocationWhereInput | null
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
   }
 
   export type ImageUploadCountOrderByAggregateInput = {
@@ -11159,17 +11262,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -11246,20 +11338,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedJsonFilter<$PrismaModel>
     _max?: NestedJsonFilter<$PrismaModel>
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type RoleCreateNestedOneWithoutUsersInput = {
@@ -11475,6 +11553,10 @@ export namespace Prisma {
     push?: string | string[]
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type FormUpdateOneRequiredWithoutOptionsNestedInput = {
     create?: XOR<FormCreateWithoutOptionsInput, FormUncheckedCreateWithoutOptionsInput>
     connectOrCreate?: FormCreateOrConnectWithoutOptionsInput
@@ -11512,6 +11594,10 @@ export namespace Prisma {
   export type LocationUpdateblocksInput = {
     set?: string[]
     push?: string | string[]
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type ImageUploadUpdateManyWithoutLocationNestedInput = {
@@ -11628,10 +11714,6 @@ export namespace Prisma {
     create?: XOR<ImageUploadCreateWithoutResponseInput, ImageUploadUncheckedCreateWithoutResponseInput>
     connectOrCreate?: ImageUploadCreateOrConnectWithoutResponseInput
     connect?: ImageUploadWhereUniqueInput
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type FormUpdateOneRequiredWithoutResponsesNestedInput = {
@@ -11754,6 +11836,30 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -11770,6 +11876,31 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -11782,17 +11913,6 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -11861,17 +11981,6 @@ export namespace Prisma {
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -11894,20 +12003,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -12060,6 +12155,7 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
   }
 
   export type FormOptionUncheckedCreateWithoutFormInput = {
@@ -12067,6 +12163,7 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
   }
 
   export type FormOptionCreateOrConnectWithoutFormInput = {
@@ -12131,6 +12228,7 @@ export namespace Prisma {
     label?: StringFilter<"FormOption"> | string
     type?: StringFilter<"FormOption"> | string
     options?: StringNullableListFilter<"FormOption">
+    required?: BoolFilter<"FormOption"> | boolean
   }
 
   export type ResponseUpsertWithWhereUniqueWithoutFormInput = {
@@ -12272,6 +12370,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks?: LocationCreateblocksInput | string[]
+    takenAt?: Date | string | null
   }
 
   export type LocationUncheckedCreateWithoutImageUploadsInput = {
@@ -12282,6 +12381,7 @@ export namespace Prisma {
     terrain: string
     typeOfDisease: string
     blocks?: LocationCreateblocksInput | string[]
+    takenAt?: Date | string | null
   }
 
   export type LocationCreateOrConnectWithoutImageUploadsInput = {
@@ -12334,6 +12434,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type LocationUncheckedUpdateWithoutImageUploadsInput = {
@@ -12344,6 +12445,7 @@ export namespace Prisma {
     terrain?: StringFieldUpdateOperationsInput | string
     typeOfDisease?: StringFieldUpdateOperationsInput | string
     blocks?: LocationUpdateblocksInput | string[]
+    takenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ResponseUpsertWithWhereUniqueWithoutImageUploadInput = {
@@ -12593,6 +12695,7 @@ export namespace Prisma {
     label: string
     type: string
     options?: FormOptionCreateoptionsInput | string[]
+    required?: boolean
   }
 
   export type ResponseCreateManyFormInput = {
@@ -12608,6 +12711,7 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type FormOptionUncheckedUpdateWithoutFormInput = {
@@ -12615,6 +12719,7 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type FormOptionUncheckedUpdateManyWithoutFormInput = {
@@ -12622,6 +12727,7 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     options?: FormOptionUpdateoptionsInput | string[]
+    required?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ResponseUpdateWithoutFormInput = {
