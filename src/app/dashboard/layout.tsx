@@ -38,10 +38,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
       <SidebarProvider
       style={
-                {
+                  {
                     '--sidebar-width': '12rem', // overide the default width
-                } as React.CSSProperties
-            }>
+                  } as React.CSSProperties
+                }>
         <div className="flex min-h-screen w-full h-full">
           <AppSidebar />
           <div className="flex-1 flex flex-col">

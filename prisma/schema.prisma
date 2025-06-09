@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "./lib/generated/prisma"
 }
 
 datasource db {
@@ -15,13 +14,19 @@ datasource db {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  name       String
-  email      String     @unique
-  password   String
-  roleId     Int
-  role       Role       @relation(fields: [roleId], references: [id])
-  response   Response[]
+  id            Int       @id @default(autoincrement())
+  name          String? // Made optional as NextAuth might not always provide a name
+  email         String    @unique
+  emailVerified DateTime? // New: For email verification with NextAuth (optional but good for security)
+  password      String // Keep for credential provider
+  image         String?   // New: For user profile image with NextAuth
+  roleId        Int
+  role          Role      @relation(fields: [roleId], references: [id])
+  response      Response[]
+
+  // NextAuth.js related fields
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model Role {
@@ -32,22 +37,22 @@ model Role {
 }
 
 model Form {
-  id         Int          @id @default(autoincrement())
-  name       String
-  date       DateTime
-  details    String
-  options    FormOption[]
-  responses  Response[]
+  id        Int          @id @default(autoincrement())
+  name      String
+  date      DateTime
+  details   String
+  options   FormOption[]
+  responses Response[]
 }
 
 model FormOption {
-  id       Int      @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   formId   Int
   label    String
   type     String
   options  String[] @default([]) // Use this for radio/checkbox choices
-  required Boolean  @default(false) // <--- ADD THIS LINE
-  form     Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  required Boolean  @default(false)
+  form     Form    @relation(fields: [formId], references: [id], onDelete: Cascade)
 }
 
 model Location {
@@ -58,29 +63,29 @@ model Location {
   terrain       String
   typeOfDisease String
   blocks        String[]
-  takenAt       DateTime?     // Add this line for the image taken date
+  takenAt       DateTime? // Add this line for the image taken date
   imageUploads  ImageUpload[] // A location can have multiple image uploads
 }
 
 model ImageUpload {
-  id               Int        @id @default(autoincrement())
-  publicId         String     @unique // Cloudinary public_id (unique identifier)
-  secureUrl        String     // Cloudinary secure_url
+  id               Int          @id @default(autoincrement())
+  publicId         String       @unique // Cloudinary public_id (unique identifier)
+  secureUrl        String // Cloudinary secure_url
   format           String?
   width            Int?
   height           Int?
-  resourceType     String?    // e.g., "image", "video", "raw"
+  resourceType     String? // e.g., "image", "video", "raw"
   originalFilename String?
 
   // Optional: If you want to store EXIF data directly from Cloudinary
   // This will be a JSON object, so you'd parse it in your application
-  exifData         Json?
+  exifData Json?
 
   // Link to Location model
-  locationId       Int?       // Optional: An image upload might not always have a specific location
-  location         Location?  @relation(fields: [locationId], references: [id])
+  locationId Int? // Optional: An image upload might not always have a specific location
+  location   Location?    @relation(fields: [locationId], references: [id])
 
-  createdAt        DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   Response Response[]
 }
@@ -89,7 +94,7 @@ model Response {
   id            Int          @id @default(autoincrement())
   formId        Int
   userId        Int
-  values        Json         // This will now mostly contain references or simple data
+  values        Json // This will now mostly contain references or simple data
   createdAt     DateTime     @default(now())
   deletedAt     DateTime?
   form          Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
@@ -99,4 +104,40 @@ model Response {
   // Otherwise, the `values` JSON might contain the ImageUpload ID for dynamic fields
   imageUploadId Int?
   imageUpload   ImageUpload? @relation(fields: [imageUploadId], references: [id])
+}
+
+// NextAuth.js Schema additions
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

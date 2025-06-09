@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateRole } from "@/app/api/services/roleService";
+import { updateRole } from "@/app/api/services/roleService"; // This import path should be correct assuming roleService.ts is in app/api/services
 import { EditRoleModalProps } from "@/types/auth";
 
 export default function EditRoleModal({
@@ -43,6 +43,7 @@ export default function EditRoleModal({
     setLoading(true);
 
     try {
+      // Assuming updateRole in roleService.ts correctly calls /api/auth/roles
       const updated = await updateRole(editingRole.id, { name: roleName });
       onUpdateRole(updated);
       setEditingRole(null);

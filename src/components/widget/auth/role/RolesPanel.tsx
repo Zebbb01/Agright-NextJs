@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import type { RolesPanelProps } from "@/types/auth";
-import { createRole } from "@/app/api/services/roleService";
+import { createRole } from "@/app/api/services/roleService"; // This import path should be correct assuming roleService.ts is in app/api/services
 
 export default function RolesPanel({
   onAddRole,
@@ -34,7 +34,8 @@ export default function RolesPanel({
     setLoading(true);
 
     try {
-      const created = await createRole(roleName);
+      // Assuming createRole in roleService.ts correctly calls /api/auth/roles
+      const created = await createRole(roleName); 
       onAddRole(created);
       setRoleName("");
       setOpen(false);

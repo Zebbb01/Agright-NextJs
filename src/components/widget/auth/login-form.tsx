@@ -1,15 +1,17 @@
+// src/components/widget/auth/login-form.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
-import { GalleryVerticalEnd } from "lucide-react";
+import { signIn, getSession } from "next-auth/react"; // Add getSession
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 
 export function LoginForm({
   className,
@@ -17,18 +19,44 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid credentials");
+    setIsSubmitting(true);
+    toast.dismiss();
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (result?.error) {
+        toast.error("Login failed", {
+          description: "Invalid email or password. Please try again.",
+        });
+      } else if (result?.ok) {
+        // Force session refresh
+        await getSession();
+        
+        toast.success("Login successful!", {
+          description: "Welcome back!",
+        });
+        
+        // Use window.location.href for a complete page refresh
+        window.location.href = "/dashboard";
+      }
+    } catch (error) {
+      console.error("Login attempt error:", error);
+      toast.error("An unexpected error occurred.", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -51,12 +79,6 @@ export function LoginForm({
               <span className="sr-only">Agright Tech.</span>
             </a>
             <h1 className="text-xl font-bold">Welcome to Agright Tech.</h1>
-            {/* <div className="text-center text-sm">
-              Don&apos;t have an account?{' '}
-              <a href="#" className="underline underline-offset-4">
-                Sign up
-              </a>
-            </div> */}
           </div>
 
           <div className="flex flex-col gap-6">
@@ -69,6 +91,7 @@ export function LoginForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isSubmitting}
               />
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -80,21 +103,28 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="pr-10"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground focus:outline-none"
                   tabIndex={-1}
+                  disabled={isSubmitting}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
-              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
-            <Button type="submit" className="w-full cursor-pointer">
-              Login
+            <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner />
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
           </div>
 
@@ -106,8 +136,7 @@ export function LoginForm({
 
           <div className="grid gap-4 sm:grid-cols-1">
             <Button variant="outline" type="button" className="w-full cursor-pointer">
-              {/* Google icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-2">
                 <path
                   d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
                   fill="currentColor"

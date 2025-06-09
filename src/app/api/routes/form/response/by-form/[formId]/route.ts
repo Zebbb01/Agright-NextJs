@@ -1,29 +1,37 @@
+// src/app/api/routes/form/response/by-form/[formId]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateId } from "@/lib/helpers/validation"; // Import the validation helper
+import { handleApiError } from "@/lib/helpers/errorHandler"; // Import the error handler helper
+import { responseInclude } from "@/lib/constants/prismaIncludes"; // Import the shared include object
 
 export async function GET(
   _: Request,
-  { params }: { params: { formId: string } }
+  { params }: { params: Promise<{ formId: string }> } // Change params type to Promise
 ) {
   try {
-    const formId = parseInt(params.formId);
-    if (isNaN(formId)) {
-      return NextResponse.json({ error: 'Invalid Form ID' }, { status: 400 });
+    // AWAIT the params before using them
+    const { formId } = await params;
+    
+    // Validate the formId using the helper
+    const validation = validateId(formId, "Form ID");
+    if (!validation.isValid) {
+      return validation.errorResponse;
     }
+    const validatedFormId = validation.id;
 
     const responses = await prisma.response.findMany({
       where: {
-        formId: formId,
-        deletedAt: null, // <-- ADD THIS LINE: Filter out soft-deleted responses
+        formId: validatedFormId,
+        deletedAt: null, // Filter out soft-deleted responses
       },
-      include: {
-        user: true, // Optional, if you want user data
-      },
-      orderBy: { createdAt: 'desc' } // Changed to createdAt as that's a more reliable sort
+      include: responseInclude, // Use the shared include for consistency
+      orderBy: { createdAt: 'desc' }
     });
+    
     return NextResponse.json(responses);
-  } catch (error) {
-    console.error("GET responses by formId error:", error);
-    return NextResponse.json({ error: "Failed to fetch responses" }, { status: 500 });
+  } catch (error: any) {
+    // Handle API errors using the centralized error handler
+    return handleApiError(error, "fetch responses by form ID");
   }
 }

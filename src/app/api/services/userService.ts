@@ -1,12 +1,20 @@
 export async function fetchUsersAndRoles() {
   try {
     const [usersRes, rolesRes] = await Promise.all([
-      fetch("/api/routes/auth/users"),
-      fetch("/api/routes/auth/roles"),
+      // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
+      fetch("/api/auth/users"),
+      // CORRECTED: Changed /api/routes/auth/roles to /api/auth/roles
+      fetch("/api/auth/roles"),
     ]);
 
     if (!usersRes.ok || !rolesRes.ok) {
-      throw new Error("Failed to fetch users or roles");
+      // It's good practice to get more specific error messages here if possible
+      const usersError = usersRes.ok ? null : await usersRes.json();
+      const rolesError = rolesRes.ok ? null : await rolesRes.json();
+
+      throw new Error(
+        `Failed to fetch users or roles: ${usersError?.error || usersRes.statusText} | ${rolesError?.error || rolesRes.statusText}`
+      );
     }
 
     const usersData = await usersRes.json();
@@ -23,7 +31,8 @@ export async function deleteUserById(userId: number) {
   if (!confirm("Are you sure you want to delete this user?")) return false;
 
   try {
-    const response = await fetch("/api/routes/auth/users", {
+    // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
+    const response = await fetch("/api/auth/users", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -51,7 +60,8 @@ export async function createUser(userData: {
   password: string;
   roleName: string;
 }) {
-  const response = await fetch("/api/routes/auth/users", {
+  // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
+  const response = await fetch("/api/auth/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -73,7 +83,8 @@ export async function updateUser(userData: {
   password?: string;
   roleName: string;
 }) {
-  const response = await fetch("/api/routes/auth/users", {
+  // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
+  const response = await fetch("/api/auth/users", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),

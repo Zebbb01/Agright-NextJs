@@ -1,9 +1,10 @@
 // src/hooks/useResponsesTable.ts
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { FormResponse } from "@/types/form"; // Use the FormResponse type
 import {
   fetchFormResponsesService,
   deleteFormResponseService,
+  fetchFormResponseService, // Added to get a single response for potential viewing/editing flow
 } from "@/app/api/services/formService"; // Import service functions
 
 const ITEMS_PER_PAGE = 10;
@@ -16,6 +17,7 @@ interface UseResponsesTableReturn {
   responses: FormResponse[];
   paginatedResponses: FormResponse[];
   currentPage: number;
+  totalResponses: number; // Added totalResponses for better pagination control
   totalPages: number;
   loading: boolean;
   error: string | null;
@@ -54,7 +56,7 @@ export const useResponsesTable = ({
   }, [fetchResponses]);
 
   const handleDeleteResponse = useCallback(async (responseId: number) => {
-    if (!window.confirm("Are you sure you want to delete this response?")) {
+    if (!window.confirm("Are you sure you want to delete this response? This action cannot be undone.")) {
       return;
     }
     try {
@@ -66,7 +68,8 @@ export const useResponsesTable = ({
     }
   }, [fetchResponses]);
 
-  const totalPages = Math.ceil(responses.length / ITEMS_PER_PAGE);
+  const totalResponses = responses.length; // Calculate total responses
+  const totalPages = Math.ceil(totalResponses / ITEMS_PER_PAGE);
   const paginatedResponses = responses.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -85,14 +88,25 @@ export const useResponsesTable = ({
   }, [fetchResponses]);
 
   // Dynamically determine all unique field labels from the 'values' objects
-  const allFieldLabels = Array.from(
-    new Set(responses.flatMap((res) => Object.keys(res.values)))
-  ).sort(); // Sort labels for consistent column order
+  // This will be used to generate table headers
+  const allFieldLabels = useMemo(() => {
+    const labels = new Set<string>();
+    responses.forEach((res) => {
+      Object.keys(res.values).forEach((key) => {
+        // Exclude DbId fields from the visible columns
+        if (!key.endsWith('DbId')) {
+          labels.add(key);
+        }
+      });
+    });
+    return Array.from(labels).sort();
+  }, [responses]); // Re-calculate when responses change
 
   return {
     responses,
     paginatedResponses,
     currentPage,
+    totalResponses, // Return total responses
     totalPages,
     loading,
     error,

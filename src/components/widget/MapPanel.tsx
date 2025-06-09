@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { useLocations } from "@/hooks/map/useLocations";
-import { motion, AnimatePresence } from "framer-motion"; // Import motion and AnimatePresence
+import { motion, AnimatePresence } from "framer-motion";
 
 const containerStyle = {
   width: "100%",
@@ -13,8 +13,8 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 7.081125,
-  lng: 125.610725,
+  lat: 7.081125, // Current location is Davao City, Davao Region, Philippines.
+  lng: 125.610725, // Current location is Davao City, Davao Region, Philippines.
 };
 
 export default function MapPanel() {
@@ -37,8 +37,6 @@ export default function MapPanel() {
 
   return (
     <div className="relative flex h-[80vh] w-full">
-      {" "}
-      {/* Ensure full width for responsiveness */}
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
@@ -46,14 +44,6 @@ export default function MapPanel() {
         options={{
           disableDefaultUI: false,
           zoomControl: true,
-          // You can customize the map style here for dark mode if needed
-          // For example, using a custom map ID or adjusting default styles
-          // styles: [
-          //   { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-          //   { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-          //   { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-          //   // ... more styles for dark mode map appearance
-          // ]
         }}
       >
         <MarkerClusterer>
@@ -64,7 +54,8 @@ export default function MapPanel() {
                   key={location.id}
                   position={{ lat: location.latitude, lng: location.longitude }}
                   icon={{
-                    url: location.image,
+                    // Apply Cloudinary transformations for the marker icon
+                    url: location.image.replace("/upload/", "/upload/f_auto,q_auto,w_50,h_50,c_fill/"),
                     scaledSize: new window.google.maps.Size(50, 50),
                   }}
                   clusterer={clusterer}
@@ -78,10 +69,10 @@ export default function MapPanel() {
       <AnimatePresence>
         {selectedLocation && (
           <motion.div
-            initial={{ x: "100%" }} // Starts off-screen to the right
-            animate={{ x: "0%" }} // Slides in to its natural position
-            exit={{ x: "100%" }} // Slides out to the right when unmounted
-            transition={{ duration: 0.2, ease: "easeOut" }} // Controls animation speed and easing
+            initial={{ x: "100%" }}
+            animate={{ x: "0%" }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute top-0 right-0 h-full w-full sm:w-[350px] bg-card text-card-foreground shadow-lg p-4 overflow-y-auto z-10"
           >
             <button
@@ -100,7 +91,8 @@ export default function MapPanel() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <img
-                  src={selectedLocation.image}
+                  // Apply Cloudinary transformations for the main image
+                  src={selectedLocation.image.replace("/upload/", "/upload/f_auto,q_auto,w_400,h_200,c_fill/")}
                   alt={selectedLocation.farmName}
                   className="w-full h-40 object-cover rounded-md"
                 />

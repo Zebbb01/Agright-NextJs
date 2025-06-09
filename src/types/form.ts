@@ -3,8 +3,8 @@
 import { Dispatch, SetStateAction } from "react";
 
 export interface FormOption {
-  id: string;
-  formId: string;
+  id: string; // Ensure this matches your Prisma schema (Int might be an issue if you're using string IDs elsewhere)
+  formId: string; // Ensure this matches your Prisma schema (Int might be an issue if you're using string IDs elsewhere)
   label: string;
   type: string;
   options?: string[];
@@ -16,13 +16,13 @@ export interface FormData {
 }
 
 export interface FormResponsePayload {
-  formId: string;
+  formId: string; // Should be string if your frontend uses string IDs for forms
   userId: number;
   values: FormData;
 }
 
 export interface Form {
-  id: string;
+  id: string; // Should be string if your frontend uses string IDs for forms
   name: string;
   details?: string;
   date?: Date;
@@ -38,8 +38,8 @@ export interface FormField {
 
 
 export interface FormResponse {
-  id: number;
-  formId: number;
+  id: number; // Keep as number if your Prisma schema defines it as Int
+  formId: number; // Keep as number if your Prisma schema defines it as Int
   userId: number;
   values: Record<string, any>;
   createdAt: string;
@@ -50,11 +50,23 @@ export interface FormResponse {
     name: string;
     email: string;
   };
+  // Add imageUpload to the FormResponse interface based on your Prisma schema
+  imageUpload?: {
+    id: number;
+    secureUrl: string;
+    location?: {
+      latitude?: number;
+      longitude?: number;
+      takenAt?: string; // ISO date string
+    };
+  };
 }
 
+// This interface seems to be for a container that *uses* the table, not the table's props directly.
+// You might not need it if you're passing props directly to ResponsesTable.
 export interface ResponsesTableProps {
-  formId?: string; // Optional formId to fetch responses for a specific form
-  isAdmin?: boolean; // isAdmin prop passed from parent (e.g., ResponsesTableContainer)
+  formId?: string;
+  isAdmin?: boolean;
   setIsCreating: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -68,9 +80,11 @@ export interface ExtendedResponsesTableProps {
   error: string | null;
   allFieldLabels: string[];
   isAdmin: boolean;
-  handleDeleteResponse: (id: number) => void;
+  handleDeleteResponse: (id: number) => Promise<void>; // Changed type to match the hook
   handlePreviousPage: () => void;
   handleNextPage: () => void;
+  handleViewResponse: (responseId: string) => void; // ADDED THIS LINE
+  handleEditResponse: (responseId: string) => void; // ADDED THIS LINE
 }
 
 // Define the type for the summary data

@@ -1,10 +1,11 @@
+// src/app/dashboard/page.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
+import { useSession } from "next-auth/react"; // Import useSession
 import MapPanel from "@/components/widget/MapPanel";
-import { BarChartPanel } from "@/components/widget/BarChartPanel";
+import { BarChartPanel } from "@/components/widget/graphs/BarChartPanel";
 import { Spinner } from "@/components/ui/spinner";
 import FormSummaryTable from "@/components/data/FormSummaryTable";
 import {
@@ -12,10 +13,14 @@ import {
   fetchFormsService,
 } from "../api/services/formService";
 import { FormSummary } from "@/types/form";
+import { LineChartPanel } from "@/components/widget/graphs/LineChartPanel";
+import { RadialChartPanel } from "@/components/widget/graphs/RadialChartPanel";
+import { ArialChartPanel } from "@/components/widget/graphs/ArialChartPanel";
 
 export default function DashboardHome() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { data: session, status } = useSession(); // Get session data and status
+
   const [summaryData, setSummaryData] = useState<FormSummary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +33,7 @@ export default function DashboardHome() {
       const newSummaryData: FormSummary[] = [];
 
       for (const form of forms) {
+        // Ensure fetchFormResponsesService can handle `userId` as a string if it's used there
         const responses = await fetchFormResponsesService(form.id);
         const sortedResponses = [...responses].sort(
           (a, b) =>
@@ -38,10 +44,11 @@ export default function DashboardHome() {
             ? sortedResponses[sortedResponses.length - 1]
             : null;
 
+        // Ensure user.name is accessed safely from the response
         const lastResponseUser =
           lastResponse?.user?.name || // Prefer user.name
           (lastResponse?.userId !== undefined // Check if userId exists
-            ? String(lastResponse.userId) // Convert userId to string
+            ? String(lastResponse.userId) // userId is already string, but casting ensures safety
             : undefined) || // If userId is undefined, fall through
           "N/A"; // Fallback if nothing else works
 
@@ -63,49 +70,93 @@ export default function DashboardHome() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Only fetch data if authenticated and not currently loading auth state
+    if (status === "authenticated") {
+      fetchData();
+    }
+  }, [status, fetchData]); // Depend on status to trigger data fetch
 
   useEffect(() => {
-    // Wait for auth state to finish loading
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+    // Handle redirection based on authentication status
+    if (status === "loading") {
+      return; // Do nothing while the session is still loading
     }
-  }, [isAuthenticated, isLoading, router]);
+    if (status === "unauthenticated") {
+      router.push("/login"); // Redirect unauthenticated users
+    }
+  }, [status, router]);
 
-  // Show loading while checking authentication
-  if (isLoading) {
+  // Show loading spinner while authentication status is being determined
+  if (status === "loading") {
     return (
-      <div>
+      <div className="flex justify-center items-center h-screen">
         <Spinner />
       </div>
     );
   }
 
-  if (!isAuthenticated) {
+  // If unauthenticated, return null as the useEffect will handle the redirect
+  if (status === "unauthenticated") {
     return null;
   }
 
+  // If authenticated, render the dashboard content
   return (
     <div className="space-y-6">
       <p className="text-lg">Welcome to the AgriTech Dashboard</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center items-center">
-        <div className="flex flex-col space-y-4">
-          <div className="flex-1">
-            <BarChartPanel />
+      {/*--------- Container ---------*/}
+      <div className="grid grid-rows-1 space-y-3">
+        {/*--------- First Row ---------*/}
+        <div className="grid grid-cols-[4fr_2fr] gap-3">
+          {/* Memory/Cpu, Login & Server Request Container */}
+          <div className="grid grid-rows-2 gap-3">
+            {/* Memory/Cpu & Login Row */}
+            <div className="grid grid-cols-2 gap-3">
+              <LineChartPanel />
+              <LineChartPanel />
+            </div>
+
+            {/* Server Request Row */}
+            <div className="grid grid-cols-1 gap-3">
+              <LineChartPanel />
+            </div>
           </div>
-          <div className="flex-1">
-            <FormSummaryTable
-              summaryData={summaryData}
-              loading={loading}
-              error={error}
-            />
+          {/* End of Memory/Cpu, Login & Server Request Container */}
+
+          {/* Memory & Google hits Container */}
+          <div className="grid grid-rows-2 gap-3">
+            {/* Memory & Google hits Row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Memory & Google hits Row */}
+              <div className="grid grid-rows-2 gap-3">
+                <RadialChartPanel />
+                <RadialChartPanel />
+              </div>
+              {/* Support calls & Sign ups Row */}
+              <div className="grid grid-rows-2 gap-3">
+                <RadialChartPanel />
+                <RadialChartPanel />
+              </div>
+            </div>
+
+            {/* Google Hits Request Row */}
+            <div className="grid grid-cols-1 gap-3">
+              <BarChartPanel />
+            </div>
           </div>
+          {/* End of Memory & Google hits Container */}
         </div>
-        <div>
-          <MapPanel />
-        </div>
+
+        {/* --------- Second Row --------- */}
+        <ArialChartPanel />
+
+        <FormSummaryTable
+          summaryData={summaryData}
+          loading={loading}
+          error={error}
+        />
+        <MapPanel />
       </div>
     </div>
   );

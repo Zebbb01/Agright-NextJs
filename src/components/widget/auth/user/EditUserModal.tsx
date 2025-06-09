@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EditUserModalProps } from "@/types/auth";
-import { useEditUserForm } from "@/hooks/user/useEditUserForm";
+import { useEditUserForm } from "@/hooks/user/useEditUserForm"; // This hook is key
 
 export default function EditUserModal(props: EditUserModalProps) {
   const {
@@ -45,7 +45,7 @@ export default function EditUserModal(props: EditUserModalProps) {
     loading,
     error,
     setError,
-    handleUpdateUser,
+    handleUpdateUser, // This function from the hook is critical
   } = useEditUserForm({ editingUser, roles, onUpdateUser, setEditingUser });
 
   return (

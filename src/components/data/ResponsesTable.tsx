@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye, Edit } from "lucide-react"; // Import Eye and Edit icons
 import { ExtendedResponsesTableProps, FormResponse } from "@/types/form";
 import { DataTable } from "../data-table";
 import { DataTableColumn } from "../../types/data-table";
@@ -22,6 +22,8 @@ export default function ResponsesTable({
   handleDeleteResponse,
   handlePreviousPage,
   handleNextPage,
+  handleViewResponse, // ADD THIS: New prop for viewing a response
+  handleEditResponse, // ADD THIS: New prop for editing a response
 }: ExtendedResponsesTableProps) {
   // Dynamically define columns for the DataTable
   const columns: DataTableColumn<FormResponse>[] = [
@@ -41,26 +43,25 @@ export default function ResponsesTable({
 
         // Check if the value looks like a Cloudinary image URL
         // You might need a more robust check based on your Cloudinary URL structure
-        if (typeof value === 'string' && value.startsWith('https://res.cloudinary.com/') && (value.includes('/image/upload/') || value.includes('/form_uploads/'))) {
-          // Render an img tag for image URLs
+        if (
+          typeof value === "string" &&
+          value.startsWith("https://res.cloudinary.com/") &&
+          (value.includes("/image/upload/") || value.includes("/form_uploads/"))
+        ) {
+          // Construct the Cloudinary URL with auto format and auto quality transformations
+          // Insert 'f_auto,q_auto' right after '/upload/'
+          const transformedUrl = value.replace(
+            "/upload/",
+            "/upload/f_auto,q_auto/"
+          );
+
           return (
-            // Using a regular <img> tag, make sure to set width/height or max-width/max-height via CSS
-            // If using Next.js Image component, replace <img> with <Image> and add width/height props
             <img
-              src={value}
+              src={transformedUrl} // Use the transformed URL here
               alt={`Uploaded ${label}`}
-              style={{ maxWidth: '100px', maxHeight: '100px', objectFit: 'contain' }} // Basic styling for display
-              className="rounded-md" // Add any Tailwind classes if needed
+              style={{ maxWidth: "100px", maxHeight: "100px", objectFit: "contain" }}
+              className="rounded-md"
             />
-            // If you want to use Next.js <Image /> component, it would look like this:
-            // <Image
-            //   src={value}
-            //   alt={`Uploaded ${label}`}
-            //   width={100} // Set appropriate width
-            //   height={100} // Set appropriate height
-            //   objectFit="contain" // Or "cover" depending on your design
-            //   className="rounded-md"
-            // />
           );
         } else if (Array.isArray(value)) {
           return value.join(", ");
@@ -70,7 +71,7 @@ export default function ResponsesTable({
         return "-";
       },
       enableTooltip: true,
-      maxLength: 20, // This maxLength might not be ideal for image cells, consider its impact
+      maxLength: 20,
     });
   });
 
@@ -118,20 +119,43 @@ export default function ResponsesTable({
               }
             : undefined
         }
-        renderRowActions={
-          isAdmin
-            ? (response) =>
-                !response.deletedAt && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteResponse(response.id)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                )
-            : undefined
-        }
+        renderRowActions={(response) => (
+          <div className="flex items-center space-x-2">
+            {/* View Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleViewResponse(response.id.toString())} // Call new view handler
+              title="View Response"
+            >
+              <Eye size={16} />
+            </Button>
+
+            {/* Edit Button (only for admin and if not deleted) */}
+            {isAdmin && !response.deletedAt && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEditResponse(response.id.toString())} // Call new edit handler
+                title="Edit Response"
+              >
+                <Edit size={16} />
+              </Button>
+            )}
+
+            {/* Delete Button (existing) */}
+            {isAdmin && !response.deletedAt && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteResponse(response.id)}
+                title="Delete Response"
+              >
+                <Trash2 size={16} />
+              </Button>
+            )}
+          </div>
+        )}
       />
     </div>
   );

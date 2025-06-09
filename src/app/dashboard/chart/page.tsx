@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { BarChartPanel } from "@/components/widget/BarChartPanel";
-import { LineChartPanel } from "@/components/widget/LineChartPanel";
+import { BarChartPanel } from "@/components/widget/graphs/BarChartPanel";
+import { LineChartPanel } from "@/components/widget/graphs/LineChartPanel";
 import FormSummaryTable from "@/components/data/FormSummaryTable"; // Import the new component
 import {
   fetchFormsService,

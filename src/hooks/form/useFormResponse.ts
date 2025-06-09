@@ -1,15 +1,18 @@
 // src/hooks/form/useFormResponse.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { FormOption, FormData, FormResponsePayload } from "@/types/form";
+import { FormOption, FormData, FormResponsePayload, FormResponse } from "@/types/form";
 import {
   fetchFormOptionsService,
   uploadFileToCloudinaryService,
   submitFormResponseService,
+  updateFormResponseService, // Import the new service
+  fetchFormResponseService, // Import the new service
 } from "@/app/api/services/formService";
 
 interface UseFormResponseProps {
   formId: string;
   userId: number;
+  responseId?: number; // Optional: If provided, indicates we are editing an existing response
 }
 
 interface FileUploadResult {
@@ -29,10 +32,13 @@ interface UseFormResponseReturn {
   handleChange: (label: string, value: any) => void;
   handleCheckboxChange: (label: string, value: string) => void;
   handleFileChange: (label: string, file: File | null) => Promise<void>;
-  handleSubmitResponse: () => Promise<boolean>;
+  handleSubmitResponse: (responseId?: string | null) => Promise<boolean>; // Updated signature
   resetForm: () => void;
   isFormInvalid: boolean;
   getImageTakenDate: (label: string) => string | null;
+  loadingInitialResponse: boolean; // New state for loading initial response
+  errorLoadingInitialResponse: string | null; // New state for initial response error
+  fetchResponseForEdit: (responseId: string) => Promise<void>; // ADD THIS LINE: Declare the new function
 }
 
 export const useFormResponse = ({
@@ -51,8 +57,56 @@ export const useFormResponse = ({
   const [errorSubmittingResponse, setErrorSubmittingResponse] = useState<
     string | null
   >(null);
+  const [loadingInitialResponse, setLoadingInitialResponse] = useState(false); // New state
+  const [errorLoadingInitialResponse, setErrorLoadingInitialResponse] = useState<string | null>(null); // New state
 
-  // Fetch form options (including the 'required' property)
+  // useCallback for fetchResponseForEdit to make it stable
+  const fetchResponseForEdit = useCallback(async (responseId: string) => {
+    setLoadingInitialResponse(true);
+    setErrorLoadingInitialResponse(null);
+    try {
+      const existingResponse = await fetchFormResponseService(Number(responseId));
+      const loadedFormData: FormData = {};
+      const loadedImageTakenDates: Record<string, string> = {};
+
+      // Populate form data from existing response values
+      for (const key in existingResponse.values) {
+        loadedFormData[key] = existingResponse.values[key];
+      }
+
+      // Handle image uploads and their associated data (URL, DbId, takenAt)
+      // Ensure fields are loaded before trying to process them here
+      if (fields.length > 0) { // Add this check
+        fields.forEach(field => {
+            if ((field.type === "Image Upload" || field.type === "File Upload") && existingResponse.imageUpload) {
+                // Assuming your `values` JSON for an image upload field directly stores the URL
+                // And you have a convention for storing the imageUploadId, e.g., `${label}DbId`
+                if (existingResponse.imageUpload.secureUrl) {
+                    loadedFormData[field.label] = existingResponse.imageUpload.secureUrl;
+                }
+                if (existingResponse.imageUpload.id) {
+                    loadedFormData[`${field.label}DbId`] = existingResponse.imageUpload.id;
+                }
+                if (existingResponse.imageUpload.location?.takenAt) {
+                    loadedImageTakenDates[field.label] = existingResponse.imageUpload.location.takenAt;
+                }
+            }
+        });
+      }
+
+
+      setFormData(loadedFormData);
+      setImageTakenDates(loadedImageTakenDates);
+    } catch (error: any) {
+      console.error("Failed to load initial response data:", error);
+      setErrorLoadingInitialResponse(error.message || "Failed to load response data for editing.");
+    } finally {
+      setLoadingInitialResponse(false);
+    }
+  }, [fields]); // Depend on 'fields' because it's used inside to process image uploads
+
+
+  // Fetch form options
   useEffect(() => {
     const fetchOptions = async () => {
       setLoadingFields(true);
@@ -60,22 +114,22 @@ export const useFormResponse = ({
       try {
         const data = await fetchFormOptionsService(formId);
         setFields(data);
-        const initialFormData: FormData = {};
-        data.forEach((field) => {
-          if (field.type === "Checkbox") {
-            initialFormData[field.label] = [];
-          } else if (
-            field.type === "Image Upload" ||
-            field.type === "File Upload"
-          ) {
-            initialFormData[field.label] = null;
-            // Initialize the DbId field as well
-            initialFormData[`${field.label}DbId`] = null;
-          } else {
-            initialFormData[field.label] = "";
-          }
-        });
-        setFormData(initialFormData);
+         const initialFormData: FormData = {};
+         data.forEach((field) => {
+           if (field.type === "Checkbox") {
+             initialFormData[field.label] = [];
+           } else if (
+             field.type === "Image Upload" ||
+             field.type === "File Upload"
+           ) {
+             initialFormData[field.label] = null;
+             initialFormData[`${field.label}DbId`] = null;
+           } else {
+             initialFormData[field.label] = "";
+           }
+         });
+         setFormData(initialFormData);
+
       } catch (error: any) {
         console.error("Failed to fetch form options:", error);
         setErrorFetchingFields(error.message || "Failed to load form fields.");
@@ -126,7 +180,7 @@ export const useFormResponse = ({
         const result: FileUploadResult = await uploadFileToCloudinaryService(file, formData);
         handleChange(label, result.secureUrl);
         handleChange(`${label}DbId`, result.id); // Store the DB ID of the saved ImageUpload record
-        
+
         // Store the takenAt date if available
         if (result.takenAt) {
           setImageTakenDates((prev) => ({
@@ -134,7 +188,7 @@ export const useFormResponse = ({
             [label]: result.takenAt!
           }));
         }
-        
+
         console.log("File uploaded successfully, ImageUpload ID:", result.id);
         if (result.takenAt) {
           console.log("Image taken date extracted:", result.takenAt);
@@ -161,7 +215,7 @@ export const useFormResponse = ({
   const getImageTakenDate = useCallback((label: string): string | null => {
     const takenAt = imageTakenDates[label];
     if (!takenAt) return null;
-    
+
     try {
       const date = new Date(takenAt);
       return date.toLocaleString();
@@ -174,7 +228,7 @@ export const useFormResponse = ({
   // Memoized validation logic for the form
   const isFormInvalid = useMemo(() => {
     // If fields haven't loaded yet, consider it invalid for disabling purposes
-    if (loadingFields || fields.length === 0) return true;
+    if (loadingFields || fields.length === 0 || loadingInitialResponse) return true;
 
     // Check if any required field is empty or if any file uploads are in progress
     for (const field of fields) {
@@ -209,10 +263,10 @@ export const useFormResponse = ({
     }
 
     return false; // If no empty required fields and no uploads in progress, the form is valid
-  }, [formData, fields, loadingFields, uploading]);
+  }, [formData, fields, loadingFields, uploading, loadingInitialResponse]);
 
   // Handle form submission - now creates Location with complete data including takenAt
-  const handleSubmitResponse = useCallback(async () => {
+  const handleSubmitResponse = useCallback(async (responseId?: string | null) => { // Updated signature
     // We can now directly use isFormInvalid here for an initial check
     if (isFormInvalid) {
       setErrorSubmittingResponse("Please fill out all required fields and wait for any uploads to complete.");
@@ -245,38 +299,48 @@ export const useFormResponse = ({
     console.log("Image taken dates:", imageTakenDates);
 
     try {
-      await submitFormResponseService(payload);
-      console.log("Form response submitted successfully");
-      
-      // Reset form data after successful submission
-      const initialFormData: FormData = {};
-      fields.forEach((field) => {
-        if (field.type === "Checkbox") {
-          initialFormData[field.label] = [];
-        } else if (
-          field.type === "Image Upload" ||
-          field.type === "File Upload"
-        ) {
-          initialFormData[field.label] = null;
-          initialFormData[`${field.label}DbId`] = null;
-        } else {
-          initialFormData[field.label] = "";
-        }
-      });
-      setFormData(initialFormData);
+      if (responseId) {
+        // If responseId exists, it's an update
+        await updateFormResponseService(Number(responseId), payload);
+        console.log("Form response updated successfully");
+      } else {
+        // Otherwise, it's a new submission
+        await submitFormResponseService(payload);
+        console.log("Form response submitted successfully");
+      }
+
+      // Reset form data after successful submission or update (if new)
+      if (!responseId) { // Only reset if it's a new form submission
+        const initialFormData: FormData = {};
+        fields.forEach((field) => {
+          if (field.type === "Checkbox") {
+            initialFormData[field.label] = [];
+          } else if (
+            field.type === "Image Upload" ||
+            field.type === "File Upload"
+          ) {
+            initialFormData[field.label] = null;
+            initialFormData[`${field.label}DbId`] = null;
+          } else {
+            initialFormData[field.label] = "";
+          }
+        });
+        setFormData(initialFormData);
+      }
       setUploading({}); // Clear any pending upload statuses
       setImageTakenDates({}); // Clear taken dates
       return true;
     } catch (error: any) {
-      console.error("Error creating response:", error);
+      console.error("Error creating/updating response:", error);
       setErrorSubmittingResponse(
-        error.message || "Failed to submit response."
+        error.message || `Failed to ${responseId ? 'update' : 'submit'} response.`
       );
       return false;
     } finally {
       setSubmittingResponse(false);
     }
-  }, [formId, userId, formData, isFormInvalid, fields, imageTakenDates]);
+  }, [formId, userId, formData, isFormInvalid, fields, imageTakenDates]); // Removed responseId from dependency array for handleSubmitResponse
+
 
   const resetForm = useCallback(() => {
     setFormData({});
@@ -317,5 +381,8 @@ export const useFormResponse = ({
     resetForm,
     isFormInvalid,
     getImageTakenDate,
+    loadingInitialResponse, // Return new state
+    errorLoadingInitialResponse, // Return new state
+    fetchResponseForEdit, // ADD THIS LINE: Return the new function
   };
 };

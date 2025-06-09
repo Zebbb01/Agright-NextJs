@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 
 import { UsersPanelProps } from "@/types/auth";
-import { useUserForm } from "@/hooks/user/useUserForm";
+import { useUserForm } from "@/hooks/user/useUserForm"; // This hook is key
 
 export default function UsersPanel({ roles, onAddUser }: UsersPanelProps) {
   const {
@@ -37,7 +37,7 @@ export default function UsersPanel({ roles, onAddUser }: UsersPanelProps) {
     setSelectedRole,
     loading,
     error,
-    handleCreateUser,
+    handleCreateUser, // This function from the hook is critical
     handleClose,
     setError,
   } = useUserForm(roles, onAddUser);

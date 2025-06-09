@@ -1,23 +1,35 @@
+// src/app/page.tsx
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
+import { useSession } from "next-auth/react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    // Only redirect after loading auth state is done
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.push("/dashboard");
-      } else {
-        router.push("/login");
-      }
+    if (status === "loading") {
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+
+    if (session) {
+      // Use window.location.href for a complete page refresh
+      window.location.href = "/dashboard";
+    } else {
+      router.replace("/login");
+    }
+  }, [session, status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   return null;
 }

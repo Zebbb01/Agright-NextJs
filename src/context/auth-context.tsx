@@ -1,65 +1,57 @@
+// src/context/auth-context.tsx
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { AuthContextType } from "@/types/auth";
+import { createContext, useContext, ReactNode } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { UserType } from "@/types/user";
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: UserType | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<UserType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
 
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedAuth === "true" && storedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false); // finished loading auth state
-  }, []);
+  const user: UserType | null = session?.user
+    ? {
+        id: Number(session.user.id),
+        email: session.user.email as string,
+        name: session.user.name as string,
+        role: session.user.role
+          ? { id: 0, name: session.user.role as string, status: 1 }
+          : null,
+      }
+    : null;
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await fetch("/api/routes/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
 
-      if (!response.ok) return false;
-
-      const userData: UserType = await response.json();
-
-      setIsAuthenticated(true);
-      setUser(userData);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(userData));
-      return true;
-    } catch (error) {
-      console.error("Login failed", error);
+    if (result?.error) {
+      console.error("Login failed:", result.error);
       return false;
     }
+    return true;
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await signOut({ redirect: false });
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated: !!session, isLoading, user, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

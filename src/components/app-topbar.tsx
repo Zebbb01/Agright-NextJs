@@ -1,3 +1,4 @@
+// src/components/app-topbar.tsx
 "use client";
 
 import { useDarkMode } from "@/hooks/useDarkMode";
@@ -10,16 +11,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
+import { useSession, signOut } from "next-auth/react"; // Import useSession and signOut from NextAuth.js
 
 export default function Topbar({ title }: { title: string }) {
   const { isDark, toggle } = useDarkMode();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { data: session, status } = useSession(); // Get session data and status
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    logout();
+  // Check if session is loading or if user is authenticated
+  const isAuthenticated = status === "authenticated";
+  const user = session?.user; // Access user data from session
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false }); // Use NextAuth.js signOut
     router.push("/login");
   };
 
@@ -37,6 +42,7 @@ export default function Topbar({ title }: { title: string }) {
           {isDark ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
+        {/* Render dropdown only if authenticated, on dashboard, and user data is available */}
         {isAuthenticated && isOnDashboard && user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -59,8 +65,8 @@ export default function Topbar({ title }: { title: string }) {
                       {user.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {/* Display the role as-is from Prisma */}
-                      {user.role?.name}
+                      {/* Access the role directly from the session user object */}
+                      {user.role}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {user.email}

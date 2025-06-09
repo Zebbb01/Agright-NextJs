@@ -63,6 +63,7 @@ export const uploadFileToCloudinaryService = async (
   publicId: string;
   secureUrl: string;
   exifData?: any;
+  takenAt?: string; // Add takenAt to the return type for the hook
 }> => {
   const CLOUDINARY_UPLOAD_PRESET =
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -132,7 +133,14 @@ export const uploadFileToCloudinaryService = async (
   }
 
   const savedImageUpload = await saveToDbRes.json();
-  return savedImageUpload.imageUpload;
+  // Return the takenAt from the imageUpload as well if available
+  return {
+    id: savedImageUpload.imageUpload.id,
+    publicId: savedImageUpload.imageUpload.publicId,
+    secureUrl: savedImageUpload.imageUpload.secureUrl,
+    exifData: savedImageUpload.imageUpload.exifData,
+    takenAt: savedImageUpload.imageUpload.location?.takenAt, // Assuming location is included if takenAt exists
+  };
 };
 
 /**
@@ -256,7 +264,7 @@ export const fetchFormService = async (formId: string): Promise<Form> => {
  * @param formId The ID of the form to delete.
  * @returns A promise that resolves when the form is successfully deleted.
  * @throws Error if the deletion fails.
- */
+*/
 export const deleteFormService = async (formId: string): Promise<void> => {
   // This path corresponds to src/app/api/routes/form/[id]/route.ts
   const res = await fetch(`/api/routes/form/${formId}`, {
@@ -302,6 +310,51 @@ export const fetchFormResponsesService = async (
   }
   const data = await res.json();
   return data;
+};
+
+/**
+ * Fetches a single form response by its ID.
+ * @param responseId The ID of the form response to fetch.
+ * @returns A promise that resolves to a FormResponse object.
+ * @throws Error if the response is not found or fetching fails.
+ */
+export const fetchFormResponseService = async (
+  responseId: number
+): Promise<FormResponse> => {
+  const response = await fetch(`/api/routes/form/response/${responseId}`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error fetching response: ${errorData.details || response.statusText}`
+    );
+  }
+  const data = await response.json();
+  return data;
+};
+
+/**
+ * Updates an existing form response.
+ * @param responseId The ID of the response to update.
+ * @param payload The updated form response data (values and optionally imageUploadId, userId).
+ * @returns A promise that resolves when the response is successfully updated.
+ * @throws Error if the response update fails.
+ */
+export const updateFormResponseService = async (
+  responseId: number,
+  payload: Partial<FormResponsePayload> // Use Partial as not all fields might be updated
+): Promise<void> => {
+  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+    method: "PATCH", // Use PATCH for partial updates
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(
+      `Failed to update response: ${errorData.details || res.statusText}`
+    );
+  }
 };
 
 /**
