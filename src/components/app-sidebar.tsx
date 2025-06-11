@@ -94,9 +94,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
 
   // Show a loading state or null if session is not yet loaded
-  if (status === "loading") {
-    return <Spinner />; // Or a loading spinner/skeleton
-  }
+  // if (status === "loading") {
+  //   return <Spinner />; // Or a loading spinner/skeleton
+  // }
 
   return (
     <Sidebar {...props}>

@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
-import { PageLoadingSpinner } from "@/components/page-loading-spinner"; // Import the new component
+import { PageLoadingSpinnerAdvanced } from "@/components/page-loading-spinner-advanced";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +34,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
+          <PageLoadingSpinnerAdvanced />
         </Providers>
       </body>
     </html>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { useLocations } from "@/hooks/map/useLocations";
 import { motion, AnimatePresence } from "framer-motion";
+import { Spinner } from "../ui/spinner";
 
 const containerStyle = {
   width: "100%",
@@ -24,7 +25,11 @@ export default function MapPanel() {
   const selectedLocation = locations.find((loc) => loc.id === selected);
 
   if (loading) {
-    return <div className="text-center text-lg mt-8">Loading map data...</div>;
+    return (
+      <div className="flex justify-center items-center h-48">
+        <Spinner />
+      </div>
+    );
   }
 
   if (error) {
@@ -55,7 +60,10 @@ export default function MapPanel() {
                   position={{ lat: location.latitude, lng: location.longitude }}
                   icon={{
                     // Apply Cloudinary transformations for the marker icon
-                    url: location.image.replace("/upload/", "/upload/f_auto,q_auto,w_50,h_50,c_fill/"),
+                    url: location.image.replace(
+                      "/upload/",
+                      "/upload/f_auto,q_auto,w_50,h_50,c_fill/"
+                    ),
                     scaledSize: new window.google.maps.Size(50, 50),
                   }}
                   clusterer={clusterer}
@@ -92,7 +100,10 @@ export default function MapPanel() {
               <CardContent className="space-y-4">
                 <img
                   // Apply Cloudinary transformations for the main image
-                  src={selectedLocation.image.replace("/upload/", "/upload/f_auto,q_auto,w_400,h_200,c_fill/")}
+                  src={selectedLocation.image.replace(
+                    "/upload/",
+                    "/upload/f_auto,q_auto,w_400,h_200,c_fill/"
+                  )}
                   alt={selectedLocation.farmName}
                   className="w-full h-40 object-cover rounded-md"
                 />

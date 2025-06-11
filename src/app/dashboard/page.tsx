@@ -150,13 +150,15 @@ export default function DashboardHome() {
 
         {/* --------- Second Row --------- */}
         <ArialChartPanel />
-
+      <div className="grid grid-cols-2 gap-3">
         <FormSummaryTable
           summaryData={summaryData}
           loading={loading}
           error={error}
         />
         <MapPanel />
+        </div>
+        
       </div>
     </div>
   );

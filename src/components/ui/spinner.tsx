@@ -1,7 +1,11 @@
-export function Spinner() {
-  return (
-    <div className="flex justify-center items-center h-screen w-full">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
-    </div>
-  );
+// src/components/ui/spinner.tsx
+import { cn } from "@/lib/utils"; // Assuming you have a utility for class merging (from shadcn/ui)
+import { Loader2 } from "lucide-react";
+
+interface SpinnerProps {
+  className?: string;
+}
+
+export function Spinner({ className }: SpinnerProps) {
+  return <Loader2 className={cn("h-4 w-4 animate-spin", className)} />;
 }

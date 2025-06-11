@@ -1,44 +1,32 @@
 // src/components/page-loading-spinner.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useReliableLoading } from "@/hooks/use-reliable-loading";
 import { Spinner } from "@/components/ui/spinner";
+import { useEffect, useState } from "react";
 
 export function PageLoadingSpinner() {
-  const [loading, setLoading] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const loading = useReliableLoading();
+  const [shouldShow, setShouldShow] = useState(false);
 
-  // Effect to show the spinner when navigation starts
+  // Add a slight delay before showing to prevent flashing
   useEffect(() => {
-    // We want to show a spinner immediately when the URL changes.
-    setLoading(true);
-
-    // No direct "routeChangeComplete" in App Router for client components.
-    // The spinner will naturally disappear when the new page component renders and replaces the old content in the layout.
-    // However, to prevent flickering for very fast loads, we'll hide it after a small delay.
-  }, [pathname, searchParams]); // Trigger when path or search params change
-
-  // Effect to hide the spinner after a short delay (optional, for fast loads)
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (loading) { // Only set a timeout if loading is true
-      timer = setTimeout(() => {
-        setLoading(false);
-      }, 300); // Adjust delay as needed (e.g., 300ms for a noticeable effect)
+    if (loading) {
+      const timer = setTimeout(() => setShouldShow(true), 150);
+      return () => clearTimeout(timer);
+    } else {
+      setShouldShow(false);
     }
+  }, [loading]);
 
-    return () => clearTimeout(timer); // Cleanup the timer
-  }, [loading, pathname, searchParams]); // Rerun this when loading state changes or path changes
-
-  if (!loading) {
-    return null;
-  }
+  if (!shouldShow) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <Spinner />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner className="h-8 w-8" />
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
     </div>
   );
 }
