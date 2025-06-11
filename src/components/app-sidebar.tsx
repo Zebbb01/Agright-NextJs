@@ -26,6 +26,7 @@ import {
   ClipboardList,
   Users2,
   ShieldCheck,
+  ArchiveIcon,
 } from "lucide-react";
 import { Spinner } from "./ui/spinner";
 
@@ -56,6 +57,7 @@ const groupedLinks: { title: string; links: SidebarLink[] }[] = [
       // Only 'Admin' can see 'Form'
       { title: "Form", url: "/dashboard/forms", icon: FileEdit, roles: ["Admin"] },
       { title: "Responses", url: "/dashboard/responses", icon: ClipboardList },
+      { title: "Archive", url: "/dashboard/archive", icon: ArchiveIcon, roles: ["Admin"] },
     ],
   },
   {

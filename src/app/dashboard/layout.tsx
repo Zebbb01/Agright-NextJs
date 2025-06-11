@@ -28,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   else if (pathname.includes('map')) title = 'Field Map View';
   else if (pathname.includes('forms')) title = 'Admin Forms';
   else if (pathname.includes('responses')) title = 'User Responses';
+  else if (pathname.includes('archive')) title = 'Archive Forms/Responses';
   else if (pathname.includes('roles')) title = 'Role Management';
   else if (pathname.includes('users')) title = 'User Management';
 

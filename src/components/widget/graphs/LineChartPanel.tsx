@@ -47,7 +47,7 @@ export function LineChartPanel() {
         </CardDescription> */}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="w-full h-full min-h-[450px] min-w-[300px]">
           <AreaChart
             accessibilityLayer
             data={chartData}

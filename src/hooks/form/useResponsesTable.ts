@@ -19,7 +19,8 @@ interface UseResponsesTableReturn {
   currentPage: number;
   totalResponses: number; // Added totalResponses for better pagination control
   totalPages: number;
-  loading: boolean;
+  loading: boolean; // For overall table loading
+  isDeleting: boolean; // New: For individual delete action loading
   error: string | null;
   handlePreviousPage: () => void;
   handleNextPage: () => void;
@@ -33,7 +34,8 @@ export const useResponsesTable = ({
 }: UseResponsesTableProps): UseResponsesTableReturn => {
   const [responses, setResponses] = useState<FormResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Overall table loading
+  const [isDeleting, setIsDeleting] = useState(false); // New state for delete loading
   const [error, setError] = useState<string | null>(null);
 
   const fetchResponses = useCallback(async () => {
@@ -56,15 +58,15 @@ export const useResponsesTable = ({
   }, [fetchResponses]);
 
   const handleDeleteResponse = useCallback(async (responseId: number) => {
-    if (!window.confirm("Are you sure you want to delete this response? This action cannot be undone.")) {
-      return;
-    }
+    setIsDeleting(true); // Start loading state for delete
     try {
       await deleteFormResponseService(responseId);
-      fetchResponses(); // Re-fetch responses to update the table
+      await fetchResponses(); // Re-fetch responses to update the table
     } catch (err: any) {
       console.error("Error deleting response:", err);
       alert(`Error deleting response: ${err.message}`);
+    } finally {
+      setIsDeleting(false); // End loading state for delete
     }
   }, [fetchResponses]);
 
@@ -109,6 +111,7 @@ export const useResponsesTable = ({
     totalResponses, // Return total responses
     totalPages,
     loading,
+    isDeleting, // Return isDeleting state
     error,
     handlePreviousPage,
     handleNextPage,

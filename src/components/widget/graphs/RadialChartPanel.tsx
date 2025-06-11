@@ -25,11 +25,11 @@ const chartData = [{ month: "january", desktop: 1260, mobile: 570 }]
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "var(--chart-1)",
+    color: "hsl(var(--chart-1))",
   },
   mobile: {
     label: "Mobile",
-    color: "var(--chart-2)",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
@@ -39,13 +39,13 @@ export function RadialChartPanel() {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Radial Chart - Stacked</CardTitle>
+        <CardTitle>Radial Chart</CardTitle>
         {/* <CardDescription>January - June 2024</CardDescription> */}
       </CardHeader>
       <CardContent className="flex flex-1 items-center pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[250px]"
+          className="mx-auto aspect-square w-full h-full max-h-[250px] max-w-[250px]"
         >
           <RadialBarChart
             data={chartData}

@@ -260,28 +260,29 @@ export const fetchFormService = async (formId: string): Promise<Form> => {
 };
 
 /**
- * Deletes a form by its ID.
- * @param formId The ID of the form to delete.
- * @returns A promise that resolves when the form is successfully deleted.
- * @throws Error if the deletion fails.
-*/
+ * Soft deletes a form by its ID (moves it to archive).
+ * @param formId The ID of the form to soft delete.
+ * @returns A promise that resolves when the form is successfully soft deleted.
+ * @throws Error if the soft deletion fails.
+ */
 export const deleteFormService = async (formId: string): Promise<void> => {
-  // This path corresponds to src/app/api/routes/form/[id]/route.ts
+  // This now calls the PATCH endpoint with action: "soft-delete"
   const res = await fetch(`/api/routes/form/${formId}`, {
-    method: "DELETE",
+    method: "PATCH", // Changed to PATCH
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "soft-delete" }), // Added action payload
   });
 
   if (!res.ok) {
     const errorBody = await res.text();
-    let errorMessage = `Failed to delete form: ${res.statusText}`;
+    let errorMessage = `Failed to soft delete form: ${res.statusText}`;
     try {
       const errorJson = JSON.parse(errorBody);
-      errorMessage = `Failed to delete form: ${
+      errorMessage = `Failed to soft delete form: ${
         errorJson.details || errorJson.error || res.statusText
       }`;
     } catch (parseError) {
-      errorMessage = `Failed to delete form: ${res.statusText}. Server response: ${errorBody}`;
+      errorMessage = `Failed to soft delete form: ${res.statusText}. Server response: ${errorBody}`;
     }
     throw new Error(errorMessage);
   }
@@ -358,30 +359,31 @@ export const updateFormResponseService = async (
 };
 
 /**
- * Deletes a form response by its ID.
- * @param responseId The ID of the form response to delete.
- * @returns A promise that resolves when the response is successfully deleted.
- * @throws Error if the deletion fails.
+ * Soft deletes a form response by its ID (moves it to archive).
+ * @param responseId The ID of the form response to soft delete.
+ * @returns A promise that resolves when the response is successfully soft deleted.
+ * @throws Error if the soft deletion fails.
  */
 export const deleteFormResponseService = async (
   responseId: number
 ): Promise<void> => {
-  // This path corresponds to src/app/api/routes/form/response/[id]/route.ts
+  // This now calls the PATCH endpoint with action: "soft-delete"
   const res = await fetch(`/api/routes/form/response/${responseId}`, {
-    method: "DELETE",
+    method: "PATCH", // Changed to PATCH
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "soft-delete" }), // Added action payload
   });
 
   if (!res.ok) {
     const errorBody = await res.text();
-    let errorMessage = `Failed to delete response: ${res.statusText}`;
+    let errorMessage = `Failed to soft delete response: ${res.statusText}`;
     try {
       const errorJson = JSON.parse(errorBody);
-      errorMessage = `Failed to delete response: ${
+      errorMessage = `Failed to soft delete response: ${
         errorJson.details || errorJson.error || res.statusText
       }`;
     } catch (parseError) {
-      errorMessage = `Failed to delete response: ${res.statusText}. Server response: ${errorBody}`;
+      errorMessage = `Failed to soft delete response: ${res.statusText}. Server response: ${errorBody}`;
     }
     throw new Error(errorMessage);
   }

@@ -7,27 +7,19 @@ import { responseInclude } from "@/lib/constants/prismaIncludes";
 import { validateFormValues } from "@/lib/helpers/formValidation";
 import { processImageLocation } from "@/lib/helpers/locationHelpers";
 
-
 export async function GET(
   _: Request,
-  { params }: { params: { id: string } } // Type is already defined as object
+  { params }: { params: { id: string } }
 ) {
   try {
-    // This is the line that likely caused the error previously if not awaited
-    // based on the previous error:
-    // const validation = validateId(params.id, "Response ID");
-
-    // We need to ensure 'params' is fully resolved before accessing 'id'.
-    // Even if the type definition is `{ id: string }`, Next.js can pass it
-    // as a Promise-like object internally, leading to this error.
     const resolvedParams = await Promise.resolve(params);
-    const responseId = resolvedParams.id; // Access 'id' after resolution
+    const responseId = resolvedParams.id;
 
-    const validation = validateId(responseId, "Response ID"); // Use the resolved ID
+    const validation = validateId(responseId, "Response ID");
     if (!validation.isValid) {
       return validation.errorResponse;
     }
-    const validatedResponseId = validation.id; // Renamed to avoid confusion
+    const validatedResponseId = validation.id;
 
     const response = await prisma.response.findUnique({
       where: { id: validatedResponseId },
@@ -49,7 +41,6 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Apply the same fix here for PATCH
     const resolvedParams = await Promise.resolve(params);
     const responseId = resolvedParams.id;
 
@@ -57,13 +48,36 @@ export async function PATCH(
     if (!validation.isValid) {
       return validation.errorResponse;
     }
-    // const responseId = validation.id; // No need to re-declare, use the one from resolvedParams/validation
 
     const body = await req.json();
+
+    // Handle restore action
+    if (body.action === "restore") {
+      const restoredResponse = await prisma.response.update({
+        where: { id: Number(responseId) },
+        data: {
+          deletedAt: null, // Set deletedAt to null to restore
+        },
+      });
+      return NextResponse.json(restoredResponse, { status: 200 });
+    }
+
+    // Handle soft-delete action (move to archive)
+    if (body.action === "soft-delete") {
+        const softDeletedResponse = await prisma.response.update({
+            where: { id: Number(responseId) },
+            data: {
+                deletedAt: new Date(), // Set deletedAt to current date for soft delete
+            },
+        });
+        return NextResponse.json(softDeletedResponse, { status: 200 });
+    }
+
+    // Original PATCH logic for updating response values (if it exists)
     const { values, imageUploadId, userId } = body;
 
     const existingResponse = await prisma.response.findUnique({
-      where: { id: Number(responseId) }, // Convert responseId to number
+      where: { id: Number(responseId) },
       select: {
         formId: true,
         imageUploadId: true,
@@ -79,8 +93,11 @@ export async function PATCH(
     const formId = existingResponse.formId;
 
     const updatedValues = {
-      ...(typeof existingResponse.values === 'object' && existingResponse.values !== null ? existingResponse.values : {}),
-      ...(typeof values === 'object' && values !== null ? values : {})
+      ...(typeof existingResponse.values === "object" &&
+      existingResponse.values !== null
+        ? existingResponse.values
+        : {}),
+      ...(typeof values === "object" && values !== null ? values : {}),
     };
 
     // --- 1. Server-Side Validation ---
@@ -100,7 +117,7 @@ export async function PATCH(
 
     // --- 3. Update the Response Record ---
     const updatedResponse = await prisma.response.update({
-      where: { id: Number(responseId) }, // Use the resolved responseId here
+      where: { id: Number(responseId) },
       data: {
         values: updatedValues,
         imageUploadId: newImageUploadId,
@@ -111,16 +128,16 @@ export async function PATCH(
 
     return NextResponse.json(updatedResponse, { status: 200 });
   } catch (error: any) {
-    return handleApiError(error, "update response");
+    return handleApiError(error, "update response or restore response");
   }
 }
 
+// PERMANENTLY DELETE a Response
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Apply the same fix here for DELETE
     const resolvedParams = await Promise.resolve(params);
     const responseId = resolvedParams.id;
 
@@ -128,17 +145,14 @@ export async function DELETE(
     if (!validation.isValid) {
       return validation.errorResponse;
     }
-    // const responseId = validation.id; // No need to re-declare, use the one from resolvedParams/validation
 
-    const softDeletedResponse = await prisma.response.update({
-      where: { id: Number(responseId) }, // Use the resolved responseId here
-      data: {
-        deletedAt: new Date(),
-      },
+    // PERFORM HARD DELETE
+    await prisma.response.delete({
+      where: { id: Number(responseId) }, // Ensure ID is a number for response deletion
     });
 
-    return NextResponse.json(softDeletedResponse, { status: 200 });
+    return new NextResponse("Response permanently deleted successfully", { status: 200 });
   } catch (error: any) {
-    return handleApiError(error, "soft-delete response");
+    return handleApiError(error, "permanently delete response");
   }
 }

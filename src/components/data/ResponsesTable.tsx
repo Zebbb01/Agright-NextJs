@@ -4,11 +4,22 @@
 import { Button } from "@/components/ui/button";
 import { Trash2, Eye, Edit } from "lucide-react"; // Import Eye and Edit icons
 import { ExtendedResponsesTableProps, FormResponse } from "@/types/form";
-import { DataTable } from "../data-table";
-import { DataTableColumn } from "../../types/data-table";
+import { DataTable } from "../data-table"; // Your existing DataTable
+import { DataTableColumn } from "@/types/data-table"; // Import your custom column type
 
-// You'll likely need to import the Image component from 'next/image' if you're using it
-// import Image from 'next/image'; // Uncomment if you use next/image
+// Import AlertDialog components
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Make sure the path is correct
+import { Spinner } from "../ui/spinner";
 
 export default function ResponsesTable({
   responses,
@@ -19,18 +30,19 @@ export default function ResponsesTable({
   error,
   allFieldLabels,
   isAdmin,
+  isDeleting, 
   handleDeleteResponse,
   handlePreviousPage,
   handleNextPage,
-  handleViewResponse, // ADD THIS: New prop for viewing a response
-  handleEditResponse, // ADD THIS: New prop for editing a response
+  handleViewResponse,
+  handleEditResponse,
 }: ExtendedResponsesTableProps) {
   // Dynamically define columns for the DataTable
   const columns: DataTableColumn<FormResponse>[] = [
     { header: "Response ID", accessor: "id", className: "font-medium" },
     {
       header: "User",
-      accessor: (response) => response.user?.name || response.userId,
+      accessor: (response) => response.user?.name || `User ID: ${response.userId}`,
     },
   ];
 
@@ -42,14 +54,12 @@ export default function ResponsesTable({
         const value = response.values[label];
 
         // Check if the value looks like a Cloudinary image URL
-        // You might need a more robust check based on your Cloudinary URL structure
         if (
           typeof value === "string" &&
           value.startsWith("https://res.cloudinary.com/") &&
           (value.includes("/image/upload/") || value.includes("/form_uploads/"))
         ) {
           // Construct the Cloudinary URL with auto format and auto quality transformations
-          // Insert 'f_auto,q_auto' right after '/upload/'
           const transformedUrl = value.replace(
             "/upload/",
             "/upload/f_auto,q_auto/"
@@ -57,7 +67,7 @@ export default function ResponsesTable({
 
           return (
             <img
-              src={transformedUrl} // Use the transformed URL here
+              src={transformedUrl}
               alt={`Uploaded ${label}`}
               style={{ maxWidth: "100px", maxHeight: "100px", objectFit: "contain" }}
               className="rounded-md"
@@ -125,8 +135,9 @@ export default function ResponsesTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleViewResponse(response.id.toString())} // Call new view handler
+              onClick={() => handleViewResponse(response.id.toString())}
               title="View Response"
+              className="h-8" // Added for consistent height
             >
               <Eye size={16} />
             </Button>
@@ -136,23 +147,52 @@ export default function ResponsesTable({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleEditResponse(response.id.toString())} // Call new edit handler
+                onClick={() => handleEditResponse(response.id.toString())}
                 title="Edit Response"
+                className="h-8" // Added for consistent height
               >
                 <Edit size={16} />
               </Button>
             )}
 
-            {/* Delete Button (existing) */}
+            {/* Delete Button (with AlertDialog for confirmation) */}
             {isAdmin && !response.deletedAt && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteResponse(response.id)}
-                title="Delete Response"
-              >
-                <Trash2 size={16} />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    title="Delete Response"
+                    className="h-8"
+                    // Disable the button when a deletion is in progress
+                    disabled={isDeleting}
+                  >
+                    {/* Show spinner or icon based on isDeleting state */}
+                    {isDeleting ? <Spinner /> : <Trash2 size={16} />}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action will soft-delete this response and move it to the archive. You can restore it later from the archive.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    {/* Disable Cancel button during deletion */}
+                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDeleteResponse(response.id)}
+                      // Disable the action button during deletion
+                      disabled={isDeleting}
+                    >
+                      {/* Show spinner inside the action button */}
+                      {isDeleting && <Spinner />}
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         )}

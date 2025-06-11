@@ -119,7 +119,7 @@ export default function DashboardHome() {
 
             {/* Server Request Row */}
             <div className="grid grid-cols-1 gap-3">
-              <LineChartPanel />
+              <BarChartPanel />
             </div>
           </div>
           {/* End of Memory/Cpu, Login & Server Request Container */}
@@ -142,7 +142,7 @@ export default function DashboardHome() {
 
             {/* Google Hits Request Row */}
             <div className="grid grid-cols-1 gap-3">
-              <BarChartPanel />
+              <LineChartPanel />
             </div>
           </div>
           {/* End of Memory & Google hits Container */}

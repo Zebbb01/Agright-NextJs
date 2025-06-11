@@ -25,7 +25,8 @@ export interface Form {
   id: string; // Should be string if your frontend uses string IDs for forms
   name: string;
   details?: string;
-  date?: Date;
+  date?: Date | string; // Can be Date object or ISO string
+  deletedAt: string | Date | null; // Added for soft delete
 }
 
 export interface FormField {
@@ -36,21 +37,24 @@ export interface FormField {
   required: boolean;
 }
 
-
 export interface FormResponse {
   id: number; // Keep as number if your Prisma schema defines it as Int
   formId: number; // Keep as number if your Prisma schema defines it as Int
   userId: number;
   values: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  createdAt: string | Date; // Can be string or Date
+  updatedAt: string | Date; // Can be string or Date
+  deletedAt: string | Date | null; // Added for soft delete
   user?: {
     id: number;
     name: string;
     email: string;
   };
-  // Add imageUpload to the FormResponse interface based on your Prisma schema
+  form?: {
+    // Add form relation
+    id: string;
+    name: string;
+  };
   imageUpload?: {
     id: number;
     secureUrl: string;
@@ -80,11 +84,12 @@ export interface ExtendedResponsesTableProps {
   error: string | null;
   allFieldLabels: string[];
   isAdmin: boolean;
-  handleDeleteResponse: (id: number) => Promise<void>; // Changed type to match the hook
+  isDeleting: boolean;
+  handleDeleteResponse: (id: number) => Promise<void>;
   handlePreviousPage: () => void;
   handleNextPage: () => void;
-  handleViewResponse: (responseId: string) => void; // ADDED THIS LINE
-  handleEditResponse: (responseId: string) => void; // ADDED THIS LINE
+  handleViewResponse: (responseId: string) => void;
+  handleEditResponse: (responseId: string) => void;
 }
 
 // Define the type for the summary data

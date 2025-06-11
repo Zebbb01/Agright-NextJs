@@ -41,6 +41,7 @@ model Form {
   name      String
   date      DateTime
   details   String
+  deletedAt   DateTime?
   options   FormOption[]
   responses Response[]
 }

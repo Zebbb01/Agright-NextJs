@@ -1,3 +1,4 @@
+// src/components/data/FormTable.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useFormsTable } from "@/hooks/form/useFormsTable";
-// No longer need TableRow, TableCell as DataTable handles it internally
-import { Form } from "@/types/form"; // Using Form instead of FormData as per your Form definition
-
-import { DataTable } from "../data-table";
-import { DataTableColumn } from "@/types/data-table";
+import { Form } from "@/types/form";
+import { DataTable } from "../data-table"; // Your existing DataTable
+import { DataTableColumn } from "@/types/data-table"; // Import your custom column type
 
 type FormTableProps = {
   setIsCreating: (isOpen: boolean) => void;
@@ -42,12 +41,13 @@ export default function FormTable({ isAdmin }: FormTableProps) {
   } = useFormsTable();
 
   // Define columns for the FormTable
-  const columns: DataTableColumn<Form>[] = [ // Changed FormData to Form
+  const columns: DataTableColumn<Form>[] = [
     { header: "Form Name", accessor: "name" },
     {
       header: "Details",
       accessor: "details",
       enableTooltip: true,
+      maxLength: 50,
     },
     {
       header: "Date",
@@ -68,10 +68,10 @@ export default function FormTable({ isAdmin }: FormTableProps) {
 
   return (
     <div className="space-y-4">
-      <DataTable<Form> // Changed FormData to Form
+      <DataTable<Form>
         columns={columns}
         data={paginatedForms}
-        isLoading={false} // Adjust based on your useFormsTable hook if it provides loading state
+        isLoading={false}
         noDataMessage="No forms found."
         pagination={
           totalPages > 1
@@ -80,7 +80,7 @@ export default function FormTable({ isAdmin }: FormTableProps) {
                 totalPages,
                 onPreviousPage: handlePreviousPage,
                 onNextPage: handleNextPage,
-                totalItems: forms.length, 
+                totalItems: forms.length,
               }
             : undefined
         }
@@ -99,7 +99,6 @@ export default function FormTable({ isAdmin }: FormTableProps) {
         }
       />
 
-      {/* Delete Dialog (this remains here as it's specific to form deletion logic) */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -118,7 +117,7 @@ export default function FormTable({ isAdmin }: FormTableProps) {
             >
               {isDeleting && <Spinner />}
               Delete
-            </AlertDialogAction>
+          </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

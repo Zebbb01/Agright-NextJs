@@ -68,7 +68,7 @@ export const useFormsTable = (): UseFormsTableReturn => {
 
   // Function to open the delete confirmation dialog
   const handleDeleteForm = useCallback((formId: string, formName: string) => {
-    setFormToDelete({ id: formId, name: formName, date: new Date(), details: "" }); // Set minimal form data for dialog
+    setFormToDelete({ id: formId, name: formName, date: new Date(), details: "", deletedAt: null }); // Set minimal form data for dialog
     setDeleteDialogOpen(true); // Open the dialog
   }, []);
 

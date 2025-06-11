@@ -145,6 +145,7 @@ export const useFormBuilder = ({ onFormCreated }: UseFormBuilderProps = {}): Use
         name: formName,
         details: details,
         date: new Date(),
+        deletedAt: null
       }, fields); // 'fields' already contains the 'required' property from state
 
       console.log("Form and fields saved!");
