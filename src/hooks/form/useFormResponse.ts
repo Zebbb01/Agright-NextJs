@@ -5,8 +5,9 @@ import {
   fetchFormOptionsService,
   uploadFileToCloudinaryService,
   submitFormResponseService,
-  updateFormResponseService, // Import the new service
-  fetchFormResponseService, // Import the new service
+  updateFormResponseService,
+  fetchFormResponseService,
+  permanentlyDeleteFormResponseService, // Import the new permanent delete service
 } from "@/app/api/services/formService";
 
 interface UseFormResponseProps {
@@ -32,13 +33,16 @@ interface UseFormResponseReturn {
   handleChange: (label: string, value: any) => void;
   handleCheckboxChange: (label: string, value: string) => void;
   handleFileChange: (label: string, file: File | null) => Promise<void>;
-  handleSubmitResponse: (responseId?: string | null) => Promise<boolean>; // Updated signature
+  handleSubmitResponse: (responseId?: string | null) => Promise<boolean>;
   resetForm: () => void;
   isFormInvalid: boolean;
   getImageTakenDate: (label: string) => string | null;
-  loadingInitialResponse: boolean; // New state for loading initial response
-  errorLoadingInitialResponse: string | null; // New state for initial response error
-  fetchResponseForEdit: (responseId: string) => Promise<void>; // ADD THIS LINE: Declare the new function
+  loadingInitialResponse: boolean;
+  errorLoadingInitialResponse: string | null;
+  fetchResponseForEdit: (responseId: string) => Promise<void>;
+  handlePermanentDeleteResponse: (responseId: number) => Promise<boolean>; // ADDED: New function for permanent deletion
+  deletingResponse: boolean; // ADDED: New state for deletion loading
+  errorDeletingResponse: string | null; // ADDED: New state for deletion error
 }
 
 export const useFormResponse = ({
@@ -57,8 +61,10 @@ export const useFormResponse = ({
   const [errorSubmittingResponse, setErrorSubmittingResponse] = useState<
     string | null
   >(null);
-  const [loadingInitialResponse, setLoadingInitialResponse] = useState(false); // New state
-  const [errorLoadingInitialResponse, setErrorLoadingInitialResponse] = useState<string | null>(null); // New state
+  const [loadingInitialResponse, setLoadingInitialResponse] = useState(false);
+  const [errorLoadingInitialResponse, setErrorLoadingInitialResponse] = useState<string | null>(null);
+  const [deletingResponse, setDeletingResponse] = useState(false); // ADDED
+  const [errorDeletingResponse, setErrorDeletingResponse] = useState<string | null>(null); // ADDED
 
   // useCallback for fetchResponseForEdit to make it stable
   const fetchResponseForEdit = useCallback(async (responseId: string) => {
@@ -114,21 +120,21 @@ export const useFormResponse = ({
       try {
         const data = await fetchFormOptionsService(formId);
         setFields(data);
-         const initialFormData: FormData = {};
-         data.forEach((field) => {
-           if (field.type === "Checkbox") {
-             initialFormData[field.label] = [];
-           } else if (
-             field.type === "Image Upload" ||
-             field.type === "File Upload"
-           ) {
-             initialFormData[field.label] = null;
-             initialFormData[`${field.label}DbId`] = null;
-           } else {
-             initialFormData[field.label] = "";
-           }
-         });
-         setFormData(initialFormData);
+          const initialFormData: FormData = {};
+          data.forEach((field) => {
+            if (field.type === "Checkbox") {
+              initialFormData[field.label] = [];
+            } else if (
+              field.type === "Image Upload" ||
+              field.type === "File Upload"
+            ) {
+              initialFormData[field.label] = null;
+              initialFormData[`${field.label}DbId`] = null;
+            } else {
+              initialFormData[field.label] = "";
+            }
+          });
+          setFormData(initialFormData);
 
       } catch (error: any) {
         console.error("Failed to fetch form options:", error);
@@ -203,7 +209,8 @@ export const useFormResponse = ({
           delete updated[label];
           return updated;
         });
-        alert(`Failed to upload file for ${label}. Please try again.`);
+        // Using a message box instead of alert()
+        console.error(`Failed to upload file for ${label}. Please try again.`);
       } finally {
         setUploading((prev) => ({ ...prev, [label]: false }));
       }
@@ -266,11 +273,12 @@ export const useFormResponse = ({
   }, [formData, fields, loadingFields, uploading, loadingInitialResponse]);
 
   // Handle form submission - now creates Location with complete data including takenAt
-  const handleSubmitResponse = useCallback(async (responseId?: string | null) => { // Updated signature
+  const handleSubmitResponse = useCallback(async (responseId?: string | null) => {
     // We can now directly use isFormInvalid here for an initial check
     if (isFormInvalid) {
       setErrorSubmittingResponse("Please fill out all required fields and wait for any uploads to complete.");
-      alert("Please fill out all required fields and wait for any uploads to complete.");
+      // Using a message box instead of alert()
+      console.error("Please fill out all required fields and wait for any uploads to complete.");
       return false;
     }
 
@@ -339,8 +347,24 @@ export const useFormResponse = ({
     } finally {
       setSubmittingResponse(false);
     }
-  }, [formId, userId, formData, isFormInvalid, fields, imageTakenDates]); // Removed responseId from dependency array for handleSubmitResponse
+  }, [formId, userId, formData, isFormInvalid, fields, imageTakenDates]);
 
+  // ADDED: New function to handle permanent deletion of a response
+  const handlePermanentDeleteResponse = useCallback(async (responseId: number): Promise<boolean> => {
+    setDeletingResponse(true);
+    setErrorDeletingResponse(null);
+    try {
+      await permanentlyDeleteFormResponseService(responseId);
+      console.log(`Response ${responseId} and associated data permanently deleted successfully.`);
+      return true;
+    } catch (error: any) {
+      console.error(`Error permanently deleting response ${responseId}:`, error);
+      setErrorDeletingResponse(error.message || "Failed to permanently delete response.");
+      return false;
+    } finally {
+      setDeletingResponse(false);
+    }
+  }, []);
 
   const resetForm = useCallback(() => {
     setFormData({});
@@ -381,8 +405,11 @@ export const useFormResponse = ({
     resetForm,
     isFormInvalid,
     getImageTakenDate,
-    loadingInitialResponse, // Return new state
-    errorLoadingInitialResponse, // Return new state
-    fetchResponseForEdit, // ADD THIS LINE: Return the new function
+    loadingInitialResponse,
+    errorLoadingInitialResponse,
+    fetchResponseForEdit,
+    handlePermanentDeleteResponse, // Return the new function
+    deletingResponse, // Return new state
+    errorDeletingResponse, // Return new state
   };
 };

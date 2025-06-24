@@ -23,6 +23,11 @@ interface UseFormsTableReturn {
   formToDelete: Form | null;
   isDeleting: boolean;
   handleDeleteConfirm: () => Promise<void>;
+  // NEW: Add these to the return type so parent components can use them
+  // These are not implemented in this hook, but signal that the parent will manage FormPanel visibility
+  handleViewForm: (formId: string) => void; // Placeholder, parent will implement
+  handleEditForm: (formId: string) => void; // Placeholder, parent will implement
+  fetchForms: () => Promise<void>; // Expose the fetch function
 }
 
 export const useFormsTable = (): UseFormsTableReturn => {
@@ -38,13 +43,12 @@ export const useFormsTable = (): UseFormsTableReturn => {
 
   const MAX_DESCRIPTION_LENGTH = 50; // Constant for truncation
 
-  const fetchAllForms = useCallback(async () => {
+  const fetchForms = useCallback(async () => { // Renamed from fetchAllForms
     setLoading(true);
     setError(null);
     try {
       const data = await fetchFormsService();
       // Assuming `data` is already sorted or you want to sort here
-      // For consistency with previous examples, if date sorting is desired:
       const sortedData = data.sort(
         (a: Form, b: Form) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime()
@@ -63,8 +67,8 @@ export const useFormsTable = (): UseFormsTableReturn => {
   }, []);
 
   useEffect(() => {
-    fetchAllForms();
-  }, [fetchAllForms]);
+    fetchForms(); // Call the renamed fetch function
+  }, [fetchForms]);
 
   // Function to open the delete confirmation dialog
   const handleDeleteForm = useCallback((formId: string, formName: string) => {
@@ -82,7 +86,7 @@ export const useFormsTable = (): UseFormsTableReturn => {
       toast.success("Form deleted successfully", {
         description: `"${formToDelete.name}" has been removed.`,
       });
-      await fetchAllForms(); // Re-fetch forms to update the table
+      await fetchForms(); // Re-fetch forms to update the table
       setDeleteDialogOpen(false); // Close the dialog
       setFormToDelete(null); // Clear the form to delete
     } catch (err: any) {
@@ -93,7 +97,7 @@ export const useFormsTable = (): UseFormsTableReturn => {
     } finally {
       setIsDeleting(false); // Deactivate spinner
     }
-  }, [formToDelete, fetchAllForms]);
+  }, [formToDelete, fetchForms]);
 
   const totalPages = Math.ceil(forms.length / ITEMS_PER_PAGE);
   const paginatedForms = forms.slice(
@@ -110,8 +114,23 @@ export const useFormsTable = (): UseFormsTableReturn => {
   }, [currentPage, totalPages]);
 
   const handleRefreshForms = useCallback(() => {
-    fetchAllForms();
-  }, [fetchAllForms]);
+    fetchForms();
+  }, [fetchForms]);
+
+  // These are placeholder functions. The actual logic to open/close the FormPanel
+  // and set its mode will reside in the parent component (FormPanelContainer).
+  const handleViewForm = useCallback((formId: string) => {
+    // This function will be called by FormTable, and its implementation
+    // will be provided by FormPanelContainer to show the FormPanel in view mode.
+    console.log("View form ID:", formId);
+  }, []);
+
+  const handleEditForm = useCallback((formId: string) => {
+    // This function will be called by FormTable, and its implementation
+    // will be provided by FormPanelContainer to show the FormPanel in edit mode.
+    console.log("Edit form ID:", formId);
+  }, []);
+
 
   return {
     forms,
@@ -131,5 +150,9 @@ export const useFormsTable = (): UseFormsTableReturn => {
     formToDelete,
     isDeleting,
     handleDeleteConfirm,
+    // NEWLY EXPORTED HANDLERS AND FETCH FUNCTION
+    handleViewForm,
+    handleEditForm,
+    fetchForms, // Expose fetchForms for direct use by parent
   };
 };

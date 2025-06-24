@@ -10,6 +10,7 @@ import {
   fetchFormResponsesService,
 } from "@/app/api/services/formService"; // Import services
 import { FormSummary } from "@/types/form";
+import { RadialChartPanel } from "@/components/widget/graphs/RadialChartPanel";
 
 export default function ChartPage() {
   const [summaryData, setSummaryData] = useState<FormSummary[]>([]);
@@ -79,8 +80,49 @@ export default function ChartPage() {
   return (
     <>
       <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <BarChartPanel />
-        <LineChartPanel />
+        {/*--------- Container ---------*/}
+        <div className="grid grid-rows-1 space-y-3">
+          {/*--------- First Row ---------*/}
+          <div className="grid grid-cols-[4fr_2fr] gap-3">
+            {/* Memory/Cpu, Login & Server Request Container */}
+            <div className="grid grid-rows-2 gap-3">
+              {/* Memory/Cpu & Login Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <LineChartPanel />
+                <LineChartPanel />
+              </div>
+
+              {/* Server Request Row */}
+              <div className="grid grid-cols-1 gap-3">
+                <BarChartPanel />
+              </div>
+            </div>
+            {/* End of Memory/Cpu, Login & Server Request Container */}
+
+            {/* Memory & Google hits Container */}
+            <div className="grid grid-rows-2 gap-3">
+              {/* Memory & Google hits Row */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Memory & Google hits Row */}
+                <div className="grid grid-rows-2 gap-3">
+                  <RadialChartPanel />
+                  <RadialChartPanel />
+                </div>
+                {/* Support calls & Sign ups Row */}
+                <div className="grid grid-rows-2 gap-3">
+                  <RadialChartPanel />
+                  <RadialChartPanel />
+                </div>
+              </div>
+
+              {/* Google Hits Request Row */}
+              <div className="grid grid-cols-1 gap-3">
+                <LineChartPanel />
+              </div>
+            </div>
+            {/* End of Memory & Google hits Container */}
+          </div>
+        </div>
       </div>
       <FormSummaryTable
         summaryData={summaryData}

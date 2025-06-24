@@ -1,10 +1,13 @@
 // src/hooks/form/useFormBuilder.ts
-import { useState, useCallback } from "react";
-import { FormField } from "@/types/form"; // Make sure FormField in types/form.ts includes 'required'
-import { createFormAndOptionsService } from "@/app/api/services/formService";
+import { useState, useCallback, useEffect } from "react";
+import { FormField, Form } from "@/types/form";
+import { createFormAndOptionsService, fetchFormByIdService, updateFormAndOptionsService } from "@/app/api/services/formService";
+import { toast } from "sonner";
 
 interface UseFormBuilderProps {
+  formId?: string | null;
   onFormCreated?: () => void;
+  onFormUpdated?: () => void;
 }
 
 interface UseFormBuilderReturn {
@@ -19,24 +22,79 @@ interface UseFormBuilderReturn {
   handleOptionChange: (fieldId: number, index: number, value: string) => void;
   addOption: (fieldId: number) => void;
   removeOption: (fieldId: number, index: number) => void;
-  handleRequiredChange: (id: number, isRequired: boolean) => void; // <--- NEW
+  handleRequiredChange: (id: number, isRequired: boolean) => void;
   handleCreateForm: () => Promise<void>;
+  handleUpdateForm: (formId: string) => Promise<void>;
+  fetchFormForEdit: (formId: string) => Promise<void>;
   creatingForm: boolean;
+  updatingForm: boolean;
   createFormError: string | null;
+  updateFormError: string | null;
+  isFormBuilderInvalid: boolean;
   resetFormBuilder: () => void;
 }
 
-export const useFormBuilder = ({ onFormCreated }: UseFormBuilderProps = {}): UseFormBuilderReturn => {
+export const useFormBuilder = ({
+  formId = null,
+  onFormCreated,
+  onFormUpdated,
+}: UseFormBuilderProps = {}): UseFormBuilderReturn => {
   const [formName, setFormName] = useState("");
   const [details, setDetails] = useState("");
   const [fields, setFields] = useState<FormField[]>([]);
   const [creatingForm, setCreatingForm] = useState(false);
+  const [updatingForm, setUpdatingForm] = useState(false);
   const [createFormError, setCreateFormError] = useState<string | null>(null);
+  const [updateFormError, setUpdateFormError] = useState<string | null>(null);
+
+  // --- Utility Functions ---
+
+  const generateNewFieldId = () => Date.now() + Math.floor(Math.random() * 1000);
+
+  const resetFormBuilder = useCallback(() => {
+    setFormName("");
+    setDetails("");
+    setFields([]);
+    setCreateFormError(null);
+    setUpdateFormError(null);
+  }, []);
+
+  // --- Fetching Existing Form Data ---
+
+  const fetchFormForEdit = useCallback(async (id: string) => {
+    setUpdatingForm(true); // Indicate loading
+    setUpdateFormError(null);
+    try {
+      // fetchFormByIdService now maps 'options' to 'fields'
+      const fetchedForm = await fetchFormByIdService(id);
+      setFormName(fetchedForm.name);
+      setDetails(fetchedForm.details || "");
+      // fetchedForm.fields should now be correctly populated by the service
+      const mappedFields: FormField[] = fetchedForm.fields.map((field: any) => ({
+        id: generateNewFieldId(), // Generate a new local ID for editing purposes
+        type: field.type,
+        label: field.label,
+        options: field.options || (field.type === "Radio" || field.type === "Checkbox" ? [""] : undefined),
+        required: field.required || false,
+      }));
+      setFields(mappedFields);
+    } catch (err: any) {
+      console.error("Failed to fetch form for edit:", err);
+      setUpdateFormError(err.message || "Failed to load form for editing.");
+      toast.error("Failed to load form", {
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setUpdatingForm(false);
+    }
+  }, []);
+
+  // --- Field Management Handlers ---
 
   const handleAddField = useCallback(() => {
     setFields((prevFields) => [
       ...prevFields,
-      { id: Date.now(), type: "Text", label: "", required: false }, // <--- Initialize required to false
+      { id: generateNewFieldId(), type: "Text", label: "", required: false },
     ]);
   }, []);
 
@@ -97,7 +155,6 @@ export const useFormBuilder = ({ onFormCreated }: UseFormBuilderProps = {}): Use
     );
   }, []);
 
-  // <--- NEW: handleRequiredChange function
   const handleRequiredChange = useCallback((id: number, isRequired: boolean) => {
     setFields((prevFields) =>
       prevFields.map((field) =>
@@ -106,58 +163,98 @@ export const useFormBuilder = ({ onFormCreated }: UseFormBuilderProps = {}): Use
     );
   }, []);
 
-  const resetFormBuilder = useCallback(() => {
-    setFormName("");
-    setDetails("");
-    setFields([]);
-    setCreateFormError(null);
-  }, []);
+  // --- Validation Logic ---
 
-  const handleCreateForm = useCallback(async () => {
+  const validateForm = useCallback(() => {
     if (!formName.trim()) {
-      setCreateFormError("Form title cannot be empty.");
-      return;
+      return "Form title cannot be empty.";
     }
     if (fields.length === 0) {
-        setCreateFormError("Form must have at least one field.");
-        return;
+      return "Form must have at least one field.";
     }
-    // Basic validation for field labels, especially for required fields
     for (const field of fields) {
-        if (!field.label.trim()) {
-            setCreateFormError(`Field with ID ${field.id} has an empty label. All fields must have a label.`);
-            return;
-        }
-        // Additional validation for options if type is Radio/Checkbox
-        if ((field.type === "Radio" || field.type === "Checkbox") && (!field.options || field.options.length === 0 || field.options.some(opt => !opt.trim()))) {
-            setCreateFormError(`Field '${field.label}' of type ${field.type} must have at least one non-empty option.`);
-            return;
-        }
+      if (!field.label.trim()) {
+        return `Field with type '${field.type}' has an empty label. All fields must have a label.`;
+      }
+      if ((field.type === "Radio" || field.type === "Checkbox") && (!field.options || field.options.length === 0 || field.options.some(opt => !opt.trim()))) {
+        return `Field '${field.label}' of type '${field.type}' must have at least one non-empty option.` ;
+      }
     }
+    return null; // No errors
+  }, [formName, fields]);
 
+  // Derived state for button disability
+  const isFormBuilderInvalid = !!validateForm();
+
+  // --- Form Submission Handlers (Create & Update) ---
+
+  const handleCreateForm = useCallback(async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      setCreateFormError(validationError);
+      return;
+    }
 
     setCreatingForm(true);
     setCreateFormError(null);
 
     try {
-      // Ensure that 'fields' array sent here contains the 'required' property for each field
       await createFormAndOptionsService({
         name: formName,
         details: details,
         date: new Date(),
-        deletedAt: null
-      }, fields); // 'fields' already contains the 'required' property from state
+        deletedAt: null // New forms are not deleted
+      }, fields);
 
-      console.log("Form and fields saved!");
+      toast.success("Form created successfully!");
       resetFormBuilder();
       onFormCreated?.();
     } catch (err: any) {
       console.error("Failed to save form:", err);
       setCreateFormError(err.message || "Failed to save form.");
+      toast.error("Failed to create form", {
+        description: err.message || "An unexpected error occurred.",
+      });
     } finally {
       setCreatingForm(false);
     }
-  }, [formName, details, fields, onFormCreated, resetFormBuilder]);
+  }, [formName, details, fields, onFormCreated, resetFormBuilder, validateForm]);
+
+
+  const handleUpdateForm = useCallback(async (id: string) => {
+    const validationError = validateForm();
+    if (validationError) {
+      setUpdateFormError(validationError);
+      return;
+    }
+
+    setUpdatingForm(true);
+    setUpdateFormError(null);
+
+    try {
+      await updateFormAndOptionsService(id, {
+        name: formName,
+        details: details,
+        // No date update unless explicitly needed
+        // No deletedAt update here, handled by delete/restore
+      }, fields); // Pass updated fields
+
+      toast.success("Form updated successfully!");
+      resetFormBuilder();
+      onFormUpdated?.();
+    } catch (err: any) {
+      console.error("Failed to update form:", err);
+      setUpdateFormError(err.message || "Failed to update form.");
+      toast.error("Failed to update form", {
+        description: err.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setUpdatingForm(false);
+    }
+  }, [formName, details, fields, onFormUpdated, resetFormBuilder, validateForm]);
+
+
+  // --- Exported Values ---
 
   return {
     formName,
@@ -171,10 +268,15 @@ export const useFormBuilder = ({ onFormCreated }: UseFormBuilderProps = {}): Use
     handleOptionChange,
     addOption,
     removeOption,
-    handleRequiredChange, // <--- RETURN NEW FUNCTION
+    handleRequiredChange,
     handleCreateForm,
+    handleUpdateForm,
+    fetchFormForEdit,
     creatingForm,
+    updatingForm,
     createFormError,
+    updateFormError,
+    isFormBuilderInvalid,
     resetFormBuilder,
   };
 };

@@ -185,6 +185,37 @@ export const fetchFormsService = async (): Promise<Form[]> => {
 };
 
 /**
+ * Fetches a single form by its ID, including its associated options.
+ * This service maps the 'options' property from the backend response to 'fields'
+ * to match the frontend Form type expectation.
+ * @param formId The ID of the form to fetch.
+ * @returns A promise that resolves to a Form object with its fields.
+ * @throws Error if the form is not found or fetching fails.
+ */
+export const fetchFormByIdService = async (formId: string): Promise<Form & { fields: FormOption[] }> => {
+  const response = await fetch(`/api/routes/form/${formId}`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error fetching form: ${errorData.details || response.statusText}`
+    );
+  }
+  const data = await response.json();
+
+  // Explicitly map 'options' from the backend response to 'fields' for the frontend type
+  const formWithFields: Form & { fields: FormOption[] } = {
+    ...data,
+    fields: data.options || [], // Ensure it's an array, even if empty
+  };
+
+  // Optionally delete the 'options' property if the frontend only expects 'fields'
+  delete (formWithFields as any).options; // Cast to any to allow deleting property
+
+  return formWithFields;
+};
+
+
+/**
  * Creates a new form and its associated form options.
  * @param formDetails The details of the form to create (name, details, date).
  * @param fields The array of form fields to associate with the new form.
@@ -241,23 +272,32 @@ export const createFormAndOptionsService = async (
 };
 
 /**
- * Fetches a single form by its ID.
- * @param formId The ID of the form to fetch.
- * @returns A promise that resolves to a Form object.
- * @throws Error if the form is not found or fetching fails.
+ * Updates an existing form and its associated form options.
+ * @param formId The ID of the form to update.
+ * @param formDetails The updated details of the form (name, details).
+ * @param fields The updated array of form fields.
+ * @returns A promise that resolves when the form and its options are successfully updated.
+ * @throws Error if the update fails.
  */
-export const fetchFormService = async (formId: string): Promise<Form> => {
-  // This path corresponds to src/app/api/routes/form/[id]/route.ts
-  const response = await fetch(`/api/routes/form/${formId}`);
-  if (!response.ok) {
-    const errorData = await response.json();
+export const updateFormAndOptionsService = async (
+  formId: string,
+  formDetails: Partial<Omit<Form, "id" | "deletedAt">>, // Allow partial update for form details
+  fields: FormField[] // All fields will be sent for update
+): Promise<void> => {
+  const res = await fetch(`/api/routes/form/${formId}`, {
+    method: "PUT", // Or PATCH depending on your backend API design
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ formDetails, fields }), // Send both form details and fields
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
     throw new Error(
-      `Error fetching form: ${errorData.details || response.statusText}`
+      `Failed to update form: ${errorData.details || res.statusText}`
     );
   }
-  const data = await response.json();
-  return data;
 };
+
 
 /**
  * Soft deletes a form by its ID (moves it to archive).
@@ -367,7 +407,7 @@ export const updateFormResponseService = async (
 export const deleteFormResponseService = async (
   responseId: number
 ): Promise<void> => {
-  // This now calls the PATCH endpoint with action: "soft-delete"
+  // This now calls the PATCH endpoint with action: "soft-delete" for soft deletion
   const res = await fetch(`/api/routes/form/response/${responseId}`, {
     method: "PATCH", // Changed to PATCH
     headers: { "Content-Type": "application/json" },
@@ -384,6 +424,36 @@ export const deleteFormResponseService = async (
       }`;
     } catch (parseError) {
       errorMessage = `Failed to soft delete response: ${res.statusText}. Server response: ${errorBody}`;
+    }
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Permanently deletes a form response by its ID, along with associated ImageUpload and Location
+ * if no other records reference them.
+ * @param responseId The ID of the form response to permanently delete.
+ * @returns A promise that resolves when the response and associated data are successfully deleted.
+ * @throws Error if the permanent deletion fails.
+ */
+export const permanentlyDeleteFormResponseService = async (
+  responseId: number
+): Promise<void> => {
+  // This calls the DELETE endpoint for permanent deletion
+  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+    method: "DELETE", // Use DELETE for permanent deletion
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    let errorMessage = `Failed to permanently delete response: ${res.statusText}`;
+    try {
+      const errorJson = JSON.parse(errorBody);
+      errorMessage = `Failed to permanently delete response: ${
+        errorJson.details || errorJson.error || res.statusText
+      }`;
+    } catch (parseError) {
+      errorMessage = `Failed to permanently delete response: ${res.statusText}. Server response: ${errorBody}`;
     }
     throw new Error(errorMessage);
   }

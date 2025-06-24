@@ -7,14 +7,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { useFormResponse } from "@/hooks/form/useFormResponse";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { useState, useEffect } from "react"; // Import useEffect
+import { useState, useEffect } from "react";
 
 interface ResponsePanelProps {
   formId: string;
   setIsOpen: (open: boolean) => void;
   userId: number;
   onResponseAdded?: () => void;
-  // ADD THESE LINES: New props for viewing/editing
   responseId?: string | null;
   isReadOnly?: boolean;
 }
@@ -24,8 +23,8 @@ export default function ResponsePanel({
   setIsOpen,
   userId,
   onResponseAdded,
-  responseId = null, // Default to null if not provided
-  isReadOnly = false, // Default to false if not provided
+  responseId = null,
+  isReadOnly = false,
 }: ResponsePanelProps) {
   const {
     formData,
@@ -42,10 +41,13 @@ export default function ResponsePanel({
     resetForm,
     isFormInvalid,
     getImageTakenDate,
-    fetchResponseForEdit, // ADD THIS: New function from hook to fetch a response
+    fetchResponseForEdit,
+    handlePermanentDeleteResponse, // ADDED: New function for permanent deletion
+    deletingResponse, // ADDED: New state for deletion loading
+    errorDeletingResponse, // ADDED: New state for deletion error
   } = useFormResponse({ formId, userId });
 
-  // ADD THIS useEffect: Fetch response data if responseId is provided
+  // Fetch response data if responseId is provided
   useEffect(() => {
     if (responseId) {
       fetchResponseForEdit(responseId);
@@ -57,12 +59,10 @@ export default function ResponsePanel({
   const onSubmit = async () => {
     console.log("Form submission started...");
     try {
-      // Check if it's an edit or new submission
       const success = await handleSubmitResponse(responseId);
       if (success) {
         console.log("Form submitted successfully, showing success toast...");
 
-        // Show success toast
         toast.success("Success!", {
           description: `Your form has been ${
             responseId ? "updated" : "submitted"
@@ -76,14 +76,12 @@ export default function ResponsePanel({
         // Close panel after a short delay
         setTimeout(() => {
           setIsOpen(false);
-          // CALL THE NEW PROP HERE: Notify parent that a response was added/updated
           if (onResponseAdded) {
             onResponseAdded();
           }
         }, 1500);
       } else {
         console.log("Form submission failed");
-        // Show error toast if no specific error message
         if (!errorSubmittingResponse) {
           toast.error("Submission Failed", {
             description: "There was an error submitting your form. Please try again.",
@@ -97,6 +95,45 @@ export default function ResponsePanel({
       });
     }
   };
+
+  // ADDED: Function to handle permanent deletion
+  const onDelete = async () => {
+    if (!responseId) {
+      toast.error("Deletion Failed", { description: "No response ID provided for deletion." });
+      return;
+    }
+
+    // Confirmation dialog (replace with custom modal if preferred)
+    if (!confirm("Are you sure you want to permanently delete this response? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const success = await handlePermanentDeleteResponse(Number(responseId));
+      if (success) {
+        toast.success("Deleted!", {
+          description: "The response and its associated data have been permanently deleted.",
+          duration: 3000,
+        });
+        setTimeout(() => {
+          setIsOpen(false);
+          if (onResponseAdded) { // Trigger refresh if parent component is listening
+            onResponseAdded();
+          }
+        }, 1500);
+      } else {
+        toast.error("Deletion Failed", {
+          description: errorDeletingResponse || "There was an error deleting the response. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error during permanent deletion:", error);
+      toast.error("Deletion Failed", {
+        description: "An unexpected error occurred during deletion. Please try again.",
+      });
+    }
+  };
+
 
   if (loadingFields) {
     return (
@@ -154,6 +191,14 @@ export default function ResponsePanel({
         </Alert>
       )}
 
+      {/* ADDED: Error alert for deletion errors */}
+      {errorDeletingResponse && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Deletion Error</AlertTitle>
+          <AlertDescription>{errorDeletingResponse}</AlertDescription>
+        </Alert>
+      )}
+
       {fields.map((field) => (
         <div key={field.id} className="space-y-2">
           <Label className="text-lg font-semibold text-foreground">
@@ -169,8 +214,8 @@ export default function ResponsePanel({
               value={formData[field.label] ?? ""}
               onChange={(e) => handleChange(field.label, e.target.value)}
               required={field.required}
-              readOnly={isReadOnly} // Set readOnly prop
-              disabled={isReadOnly} // Disable if readOnly
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
             />
           )}
 
@@ -180,8 +225,8 @@ export default function ResponsePanel({
               value={formData[field.label] ?? ""}
               onChange={(e) => handleChange(field.label, e.target.value)}
               required={field.required}
-              readOnly={isReadOnly} // Set readOnly prop
-              disabled={isReadOnly} // Disable if readOnly
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
             />
           )}
 
@@ -199,7 +244,7 @@ export default function ResponsePanel({
                     style={{ accentColor: "var(--foreground)" }}
                     className="w-4 h-4"
                     required={field.required && !formData[field.label]}
-                    disabled={isReadOnly} // Disable if readOnly
+                    disabled={isReadOnly}
                   />
                   <Label className="text-sm">{opt}</Label>
                 </div>
@@ -218,7 +263,7 @@ export default function ResponsePanel({
                     onChange={() => handleCheckboxChange(field.label, opt)}
                     style={{ accentColor: "var(--foreground)" }}
                     className="w-4 h-4 rounded"
-                    disabled={isReadOnly} // Disable if readOnly
+                    disabled={isReadOnly}
                   />
                   <Label className="text-sm">{opt}</Label>
                 </div>
@@ -228,7 +273,7 @@ export default function ResponsePanel({
 
           {(field.type === "Image Upload" || field.type === "File Upload") && (
             <div>
-              {!isReadOnly && ( // Only show file input if not read-only
+              {!isReadOnly && (
                 <Input
                   type="file"
                   accept={field.type === "Image Upload" ? "image/*" : "*"}
@@ -248,14 +293,14 @@ export default function ResponsePanel({
                 </div>
               )}
               {formData[field.label] && typeof formData[field.label] === "string" && (
-            <div className="mt-2">
-              {field.type === "Image Upload" ? (
-                <div>
-                  <img
-                    src={formData[field.label].replace("/upload/", "/upload/f_auto,q_auto/")} // Apply transformation here too
-                    alt="Uploaded image"
-                    className="max-w-full h-auto max-h-48 object-contain rounded-md"
-                  />
+                <div className="mt-2">
+                  {field.type === "Image Upload" ? (
+                    <div>
+                      <img
+                        src={formData[field.label].replace("/upload/", "/upload/f_auto,q_auto/")}
+                        alt="Uploaded image"
+                        className="max-w-full h-auto max-h-48 object-contain rounded-md"
+                      />
                       <div className="mt-2 space-y-1">
                         {!isReadOnly && (
                           <p className="text-xs text-green-600">
@@ -313,17 +358,34 @@ export default function ResponsePanel({
       ))}
 
       <div className="flex justify-end gap-2 pt-4">
+        {responseId && !isReadOnly && ( // Only show delete button if editing an existing response and not read-only
+          <Button
+            variant="destructive"
+            onClick={onDelete}
+            disabled={deletingResponse || submittingResponse}
+            className="min-w-[120px]"
+          >
+            {deletingResponse ? (
+              <div className="flex items-center gap-2">
+                <Spinner />
+                <span>Deleting...</span>
+              </div>
+            ) : (
+              "Delete Permanently"
+            )}
+          </Button>
+        )}
         <Button
           variant="destructive"
           onClick={() => setIsOpen(false)}
-          disabled={submittingResponse}
+          disabled={submittingResponse || deletingResponse} // Disable if submitting or deleting
         >
           {isReadOnly ? "Close" : "Cancel"}
         </Button>
-        {!isReadOnly && ( // Only show save button if not read-only
+        {!isReadOnly && (
           <Button
             onClick={onSubmit}
-            disabled={isFormInvalid || submittingResponse}
+            disabled={isFormInvalid || submittingResponse || deletingResponse} // Disable if deleting as well
             className="min-w-[120px]"
           >
             {submittingResponse ? (
@@ -337,21 +399,6 @@ export default function ResponsePanel({
           </Button>
         )}
       </div>
-      {/* Debug info for development */}
-      {/* {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-          <details>
-            <summary className="cursor-pointer">Debug Info</summary>
-            <pre className="mt-2 whitespace-pre-wrap">
-              {JSON.stringify({
-                formData,
-                isFormInvalid,
-                uploading
-              }, null, 2)}
-            </pre>
-          </details>
-        </div>
-      )} */}
     </div>
   );
 }

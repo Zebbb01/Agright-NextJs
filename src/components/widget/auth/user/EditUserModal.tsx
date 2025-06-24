@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { EditUserModalProps } from "@/types/auth";
 import { useEditUserForm } from "@/hooks/user/useEditUserForm"; // This hook is key
+import { Spinner } from "@/components/ui/spinner";
 
 export default function EditUserModal(props: EditUserModalProps) {
   const {
@@ -166,7 +167,7 @@ export default function EditUserModal(props: EditUserModalProps) {
             Cancel
           </Button>
           <Button onClick={handleUpdateUser} disabled={loading}>
-            {loading ? "Updating..." : "Update User"}
+            {loading ? <Spinner /> : "Update User"}
           </Button>
         </DialogFooter>
       </DialogContent>

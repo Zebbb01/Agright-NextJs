@@ -74,7 +74,7 @@ export interface ResponsesTableProps {
   setIsCreating: Dispatch<SetStateAction<boolean>>;
 }
 
-// Extended props for the table component
+// Extended props for the Responses table component
 export interface ExtendedResponsesTableProps {
   responses: FormResponse[];
   paginatedResponses: FormResponse[];
@@ -106,3 +106,44 @@ export interface FormSummaryTableProps {
   loading: boolean;
   error: string | null;
 }
+
+// NEW: Props for FormPanel
+export interface FormPanelProps {
+  setIsOpen: (open: boolean) => void;
+  formId?: string | null;
+  isReadOnly?: boolean;
+  onFormUpdated?: () => void; // Callback for when a form is successfully updated
+}
+
+// NEW: Props for useFormBuilder hook
+export interface UseFormBuilderProps {
+  formId?: string | null; // Optional: ID of the form being edited/viewed
+  onFormCreated?: () => void;
+  onFormUpdated?: () => void; // Callback for when a form is successfully updated
+}
+
+// NEW: Return type for useFormBuilder hook
+export interface UseFormBuilderReturn {
+  formName: string;
+  setFormName: (name: string) => void;
+  details: string;
+  setDetails: (details: string) => void;
+  fields: FormField[];
+  handleAddField: () => void;
+  handleFieldChange: (id: number, key: keyof FormField, value: any) => void;
+  handleRemoveField: (id: number) => void;
+  handleOptionChange: (fieldId: number, index: number, value: string) => void;
+  addOption: (fieldId: number) => void;
+  removeOption: (fieldId: number, index: number) => void;
+  handleRequiredChange: (id: number, isRequired: boolean) => void;
+  handleCreateForm: () => Promise<void>;
+  handleUpdateForm: (formId: string) => Promise<void>; // New: handle update
+  fetchFormForEdit: (formId: string) => Promise<void>; // New: fetch form for edit
+  creatingForm: boolean;
+  updatingForm: boolean; // New: state for updating
+  createFormError: string | null;
+  updateFormError: string | null; // New: error for updating
+  isFormBuilderInvalid: boolean; // New: validation state for save button
+  resetFormBuilder: () => void;
+}
+

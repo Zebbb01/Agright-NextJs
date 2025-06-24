@@ -116,20 +116,20 @@ export default function ResponseContainer({ formId }: { formId: string }) {
 
           {/* Pass table data as props */}
           <ResponsesTable
-            responses={responses}
-            paginatedResponses={paginatedResponses}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            loading={loading}
-            error={error}
-            allFieldLabels={allFieldLabels}
-            isAdmin={isAdmin}
-            handleDeleteResponse={handleDeleteResponse}
-            handlePreviousPage={handlePreviousPage}
-            handleNextPage={handleNextPage}
-            handleViewResponse={handleViewResponse} // Pass new view handler
-            handleEditResponse={handleEditResponse} // Pass new edit handler
-          />
+              responses={responses}
+              paginatedResponses={paginatedResponses}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              loading={loading}
+              error={error}
+              allFieldLabels={allFieldLabels}
+              isAdmin={isAdmin}
+              handleDeleteResponse={handleDeleteResponse}
+              handlePreviousPage={handlePreviousPage}
+              handleNextPage={handleNextPage}
+              handleViewResponse={handleViewResponse} // Pass new view handler
+              handleEditResponse={handleEditResponse} // Pass new edit handler
+              isDeleting={false}          />
         </>
       )}
     </div>

@@ -1,7 +1,7 @@
 // src/hooks/useFormManagement.ts
-import { useState, useEffect } from "react";
-import { Form } from "@/types/form";
-import { fetchFormService } from "@/app/api/services/formService"; // Corrected import path
+import { useState, useEffect, useCallback } from "react";
+import { Form, FormOption } from "@/types/form"; // Import FormOption
+import { fetchFormByIdService } from "@/app/api/services/formService"; // Corrected import to fetchFormByIdService
 import { useAuth } from "@/context/auth-context"; // Assuming this is correct
 
 interface UseFormManagementProps {
@@ -29,7 +29,7 @@ interface UseAuthReturn {
 interface UseFormManagementReturn {
   isCreating: boolean;
   setIsCreating: (open: boolean) => void;
-  form: Form | null;
+  form: (Form & { fields: FormOption[] }) | null; // Updated type to include fields
   loadingForm: boolean;
   errorFetchingForm: string | null;
   user: AuthUser | null;
@@ -40,7 +40,8 @@ interface UseFormManagementReturn {
 
 export const useFormManagement = ({ formId }: UseFormManagementProps): UseFormManagementReturn => {
   const [isCreating, setIsCreating] = useState(false);
-  const [form, setForm] = useState<Form | null>(null);
+  // Initial state for form can be null, and it will be populated with fields after fetch
+  const [form, setForm] = useState<(Form & { fields: FormOption[] }) | null>(null);
   const [loadingForm, setLoadingForm] = useState(false);
   const [errorFetchingForm, setErrorFetchingForm] = useState<string | null>(null);
 
@@ -59,13 +60,17 @@ export const useFormManagement = ({ formId }: UseFormManagementProps): UseFormMa
 
   const isAdmin = user?.role?.name.toLowerCase() === "admin";
 
-  const fetchForm = async () => {
-    if (!formId) return;
+  const fetchForm = useCallback(async () => { // Wrapped in useCallback
+    if (!formId) {
+      setForm(null); // Clear form if no formId
+      return;
+    }
 
     setLoadingForm(true);
     setErrorFetchingForm(null);
     try {
-      const data = await fetchFormService(formId);
+      // Use fetchFormByIdService to get form and its options/fields
+      const data = await fetchFormByIdService(formId);
       setForm(data);
     } catch (err: any) {
       console.error("Failed to fetch form:", err);
@@ -73,11 +78,11 @@ export const useFormManagement = ({ formId }: UseFormManagementProps): UseFormMa
     } finally {
       setLoadingForm(false);
     }
-  };
+  }, [formId]); // Depend on formId to refetch when it changes
 
   useEffect(() => {
     fetchForm();
-  }, [formId]);
+  }, [fetchForm]); // Depend on fetchForm function
 
   const refetchForm = () => {
     fetchForm();

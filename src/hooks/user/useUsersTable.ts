@@ -6,8 +6,7 @@ import {
   fetchUsersAndRoles,
   deleteUserById,
 } from "@/app/api/services/userService";
-import { UserType } from "@/types/user";
-import { RoleType } from "@/types/role";
+import { UserType, RoleType } from "@/types/user";
 
 const ITEMS_PER_PAGE = 10;
 

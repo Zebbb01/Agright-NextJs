@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { createUser } from "@/app/api/services/userService";
-import { UserType } from "@/types/user";
-import { RoleType } from "@/types/role";
+import { UserType, RoleType } from "@/types/user";
 
 export function useUserForm(
   roles: RoleType[],

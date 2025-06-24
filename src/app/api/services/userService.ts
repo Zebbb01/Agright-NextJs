@@ -27,8 +27,11 @@ export async function fetchUsersAndRoles() {
   }
 }
 
+import { toast } from "sonner"; // Import toast for notifications
+
 export async function deleteUserById(userId: number) {
-  if (!confirm("Are you sure you want to delete this user?")) return false;
+  // Removed the confirm() dialog as per request.
+  // A confirmation dialog should ideally be implemented in the UI component calling this function.
 
   try {
     // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
@@ -42,13 +45,16 @@ export async function deleteUserById(userId: number) {
 
     if (!response.ok) {
       const data = await response.json();
-      alert(`Failed to delete user: ${data.error || response.statusText}`);
+      // Replace alert with toast for better UI/UX
+      toast.error(`Failed to delete user: ${data.error || response.statusText}`);
       return false;
     }
 
+    toast.success("User deleted successfully!"); // Success toast
     return true;
   } catch (error) {
-    alert("Failed to delete user.");
+    // Replace alert with toast for better UI/UX
+    toast.error("Failed to delete user.");
     console.error(error);
     return false;
   }
@@ -97,3 +103,4 @@ export async function updateUser(userData: {
 
   return await response.json();
 }
+  
