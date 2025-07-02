@@ -1,5 +1,5 @@
 // src/components/data/ArchiveTable.tsx
-import React from "react";
+import React, { useMemo } from "react"; // Import useMemo
 import { format } from "date-fns";
 import { History, Trash } from "lucide-react";
 
@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DataTableControls } from "@/components/data-table-controls"; // Import DataTableControls
 
 interface ArchiveTableProps<T> {
   data: T[];
@@ -32,11 +33,16 @@ interface ArchiveTableProps<T> {
   type: "forms" | "responses";
   currentPage: number;
   totalPages: number;
-  totalItems: number;
+  totalItems: number; // This is the total AFTER filtering
   onPreviousPage: () => void;
   onNextPage: () => void;
   onRestore: (id: T extends Form ? string : number) => void;
   onPermanentDelete: (id: T extends Form ? string : number) => void;
+  // NEW PROPS FOR FILTERING
+  allColumns: DataTableColumn<T>[]; // All possible columns for this table type
+  searchTerm: string;
+  visibleColumnIds: string[];
+  onFilterChange: (filters: { searchTerm: string; visibleColumns: string[] }) => void;
 }
 
 export function ArchiveTable<T extends Form | FormResponse>({
@@ -50,84 +56,31 @@ export function ArchiveTable<T extends Form | FormResponse>({
   onNextPage,
   onRestore,
   onPermanentDelete,
+  allColumns, // NEW
+  searchTerm, // NEW
+  visibleColumnIds, // NEW
+  onFilterChange, // NEW
 }: ArchiveTableProps<T>) {
-  const getColumns = (): DataTableColumn<T>[] => {
-    if (type === "forms") {
-      return [
-        {
-          header: "Form Name",
-          accessor: "name",
-        },
-        {
-          header: "Details",
-          accessor: "details",
-          enableTooltip: true,
-          maxLength: 50,
-        },
-        {
-          header: "Deleted On",
-          accessor: (item) =>
-            (item as Form).deletedAt
-              ? format(new Date((item as Form).deletedAt!), "PPP")
-              : "N/A",
-        },
-        // IMPORTANT: Add an empty header for the actions column to align the header with the buttons
-        {
-          header: "", // Empty header for the actions column
-          accessor: null, // No direct accessor for actions
-        }
-      ] as DataTableColumn<T>[];
-    } else {
-      return [
-        {
-          header: "Response ID",
-          accessor: "id",
-        },
-        {
-          header: "Form Name",
-          accessor: (item) => (item as FormResponse).form?.name || "N/A",
-        },
-        {
-          header: "Submitted By",
-          accessor: (item) => (item as FormResponse).user?.name || "Anonymous",
-        },
-        {
-          header: "Submitted On",
-          accessor: (item) =>
-            format(new Date((item as FormResponse).createdAt), "PPP"),
-        },
-        {
-          header: "Deleted On",
-          accessor: (item) =>
-            (item as FormResponse).deletedAt
-              ? format(new Date((item as FormResponse).deletedAt!), "PPP")
-              : "N/A",
-        },
-        {
-          header: "Response Data Summary",
-          accessor: (item) => {
-            const values = (item as FormResponse).values;
-            const summary = Object.entries(values)
-              .map(([key, val]) => `${key}: ${val}`)
-              .slice(0, 2)
-              .join(", ");
-            return summary.length > 50
-              ? summary.substring(0, 47) + "..."
-              : summary;
-          },
-          enableTooltip: true,
-          maxLength: 50,
-        },
-        // IMPORTANT: Add an empty header for the actions column to align the header with the buttons
-        {
-          header: "", // Empty header for the actions column
-          accessor: null, // No direct accessor for actions
-        }
-      ] as DataTableColumn<T>[];
-    }
+
+  // Filter columns based on visibleColumnIds for DataTable rendering
+  const displayedColumns = useMemo(() => {
+    return allColumns.filter(
+      (column) =>
+        // Always include columns without an 'id' (like the actions column)
+        column.id === undefined || visibleColumnIds.includes(column.id)
+    );
+  }, [allColumns, visibleColumnIds]);
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    onFilterChange({ searchTerm: newSearchTerm, visibleColumns: visibleColumnIds });
   };
 
-  const columns = getColumns();
+  const handleColumnVisibilityChange = (columnId: string, isChecked: boolean) => {
+    const newVisibleColumnIds = isChecked
+      ? [...visibleColumnIds, columnId]
+      : visibleColumnIds.filter((id) => id !== columnId);
+    onFilterChange({ searchTerm: searchTerm, visibleColumns: newVisibleColumnIds });
+  };
 
   const renderRowActions = (item: T) => {
     const isForm = type === "forms";
@@ -137,12 +90,11 @@ export function ArchiveTable<T extends Form | FormResponse>({
       : `(ID: ${(item as FormResponse).id})`;
 
     return (
-      // Added `justify-end` to align buttons to the right, and `items-center` for vertical alignment
       <div className="flex items-center justify-end gap-2 h-full">
         {type === "responses" && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9"> {/* Explicit height if needed */}
+              <Button variant="outline" size="sm" className="h-9">
                 View Data
               </Button>
             </DialogTrigger>
@@ -159,7 +111,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9"> {/* Explicit height if needed */}
+            <Button variant="outline" size="sm" className="h-9">
               <History className="mr-2 h-4 w-4" /> Restore
             </Button>
           </AlertDialogTrigger>
@@ -174,7 +126,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onRestore(itemId as T extends Form ? string : number)}>
+              <AlertDialogAction onClick={() => onRestore(itemId as any)}>
                 Restore
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -183,7 +135,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" className="h-9"> {/* Explicit height if needed */}
+            <Button variant="destructive" size="sm" className="h-9">
               <Trash className="mr-2 h-4 w-4" /> Delete Permanently
             </Button>
           </AlertDialogTrigger>
@@ -201,7 +153,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
             </AlertDialogDescription>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onPermanentDelete(itemId as T extends Form ? string : number)}>
+              <AlertDialogAction onClick={() => onPermanentDelete(itemId as any)}>
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -212,21 +164,34 @@ export function ArchiveTable<T extends Form | FormResponse>({
   };
 
   return (
-    <DataTable<T>
-      columns={columns}
-      data={data}
-      isLoading={isLoading}
-      isError={false}
-      errorMessage={`Failed to load archived ${type}.`}
-      noDataMessage={`No archived ${type} found.`}
-      pagination={{
-        currentPage: currentPage,
-        totalPages: totalPages,
-        onPreviousPage: onPreviousPage,
-        onNextPage: onNextPage,
-        totalItems: totalItems,
-      }}
-      renderRowActions={renderRowActions}
-    />
+    <div className="space-y-4">
+      <DataTableControls<T>
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        columns={allColumns} // Pass all possible columns to controls
+        visibleColumnIds={visibleColumnIds}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+      />
+      <DataTable<T>
+        columns={[
+          ...displayedColumns,
+          // Add a dummy column for actions if not already present and needed for alignment
+          { header: "", id: "actions", accessor: () => null }
+        ]}
+        data={data}
+        isLoading={isLoading}
+        isError={false}
+        errorMessage={`Failed to load archived ${type}.`}
+        noDataMessage={`No archived ${type} found.`}
+        pagination={{
+          currentPage: currentPage,
+          totalPages: totalPages,
+          onPreviousPage: onPreviousPage,
+          onNextPage: onNextPage,
+          totalItems: totalItems, // This is the filtered total
+        }}
+        renderRowActions={renderRowActions}
+      />
+    </div>
   );
 }

@@ -1,13 +1,14 @@
 // src/components/data/ResponsesTable.tsx
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, Edit } from "lucide-react"; // Import Eye and Edit icons
-import { ExtendedResponsesTableProps, FormResponse } from "@/types/form";
-import { DataTable } from "../data-table"; // Your existing DataTable
-import { DataTableColumn } from "@/types/data-table"; // Import your custom column type
+import { Trash2, Eye, Edit } from "lucide-react";
+import { ExtendedResponsesTableProps, FormResponse } from "@/types/data-table";
+import { DataTable } from "../data-table";
+import { DataTableColumn } from "@/types/data-table";
+import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
 
-// Import AlertDialog components
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,53 +19,63 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Make sure the path is correct
+} from "@/components/ui/alert-dialog";
 import { Spinner } from "../ui/spinner";
 
 export default function ResponsesTable({
   responses,
-  paginatedResponses,
   currentPage,
   totalPages,
   loading,
   error,
   allFieldLabels,
   isAdmin,
-  isDeleting, 
+  isDeleting,
   handleDeleteResponse,
   handlePreviousPage,
   handleNextPage,
   handleViewResponse,
   handleEditResponse,
+  onFilterChange, // Keep this prop to receive updates from DataTableControls
+  initialSearchTerm,
+  initialVisibleColumns,
 }: ExtendedResponsesTableProps) {
-  // Dynamically define columns for the DataTable
-  const columns: DataTableColumn<FormResponse>[] = [
-    { header: "Response ID", accessor: "id", className: "font-medium" },
-    {
-      header: "User",
-      accessor: (response) => response.user?.name || `User ID: ${response.userId}`,
-    },
-  ];
+  // Dynamically define all possible columns
+  const allColumns: DataTableColumn<FormResponse>[] = useMemo(() => {
+    const baseColumns: DataTableColumn<FormResponse>[] = [
+      {
+        id: "responseId",
+        header: "Response ID",
+        accessor: "id",
+        className: "font-medium",
+        searchable: true,
+        toggleable: false,
+      },
+      {
+        id: "userName",
+        header: "User",
+        accessor: (response) => response.user?.name || `User ID: ${response.userId}`,
+        searchable: true,
+        toggleable: true,
+      },
+    ];
 
-  // Add dynamic columns for each field label
-  allFieldLabels.forEach((label) => {
-    columns.push({
+    const dynamicColumns: DataTableColumn<FormResponse>[] = allFieldLabels.map((label) => ({
+      id: label,
       header: label,
       accessor: (response) => {
         const value = response.values[label];
 
-        // Check if the value looks like a Cloudinary image URL
         if (
           typeof value === "string" &&
           value.startsWith("https://res.cloudinary.com/") &&
-          (value.includes("/image/upload/") || value.includes("/form_uploads/"))
+          (value.includes("/image/upload/") ||
+            value.includes("/form_uploads/"))
         ) {
-          // Construct the Cloudinary URL with auto format and auto quality transformations
           const transformedUrl = value.replace(
             "/upload/",
             "/upload/f_auto,q_auto/"
           );
-
           return (
             <img
               src={transformedUrl}
@@ -82,38 +93,80 @@ export default function ResponsesTable({
       },
       enableTooltip: true,
       maxLength: 20,
-    });
-  });
+      searchable: true,
+      toggleable: true,
+    }));
 
-  // Add static columns at the end
-  columns.push(
-    {
-      header: "Submitted At",
-      accessor: (response) =>
-        new Date(response.createdAt).toLocaleString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
-        }),
-    },
-    {
-      header: "Status",
-      accessor: (response) =>
-        response.deletedAt
-          ? `Deleted: ${new Date(response.deletedAt).toLocaleString()}`
-          : "Active",
+    const staticColumns: DataTableColumn<FormResponse>[] = [
+      {
+        id: "submittedAt",
+        header: "Submitted At",
+        accessor: (response) =>
+          new Date(response.createdAt).toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+          }),
+        searchable: false,
+        toggleable: true,
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessor: (response) =>
+          response.deletedAt
+            ? `Deleted: ${new Date(response.deletedAt).toLocaleString()}`
+            : "Active",
+        searchable: true,
+        toggleable: true,
+      },
+    ];
+
+    return [...baseColumns, ...dynamicColumns, ...staticColumns];
+  }, [allFieldLabels]);
+
+  // Filter columns based on initialVisibleColumns
+  const displayedColumns = useMemo(() => {
+    // If initialVisibleColumns is provided, filter based on it.
+    // Otherwise, assume all toggleable columns should be displayed initially.
+    if (initialVisibleColumns && initialVisibleColumns.length > 0) {
+      return allColumns.filter((column) =>
+        column.id === undefined || initialVisibleColumns.includes(column.id)
+      );
     }
-  );
+    // Default to showing all toggleable columns
+    return allColumns.filter((column) => column.toggleable !== false);
+  }, [allColumns, initialVisibleColumns]);
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    onFilterChange({ searchTerm: newSearchTerm, visibleColumns: initialVisibleColumns });
+  };
+
+  const handleColumnVisibilityChange = (columnId: string, isChecked: boolean) => {
+    const newVisibleColumnIds = isChecked
+      ? [...initialVisibleColumns, columnId]
+      : initialVisibleColumns.filter((id) => id !== columnId);
+    onFilterChange({ searchTerm: initialSearchTerm, visibleColumns: newVisibleColumnIds });
+  };
 
   return (
     <div className="space-y-4">
+      {/* Render the new DataTableControls component */}
+      <DataTableControls<FormResponse>
+        searchTerm={initialSearchTerm}
+        onSearchChange={handleSearchChange}
+        columns={allColumns} // Pass all possible columns for the dropdown
+        visibleColumnIds={initialVisibleColumns}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+      />
+
       <DataTable<FormResponse>
-        columns={columns}
-        data={paginatedResponses}
+        columns={displayedColumns} // Pass only the currently displayed columns to DataTable
+        data={responses}
         isLoading={loading}
         isError={!!error}
         errorMessage={error || "Failed to load responses."}
@@ -137,7 +190,7 @@ export default function ResponsesTable({
               size="sm"
               onClick={() => handleViewResponse(response.id.toString())}
               title="View Response"
-              className="h-8" // Added for consistent height
+              className="h-8"
             >
               <Eye size={16} />
             </Button>
@@ -149,7 +202,7 @@ export default function ResponsesTable({
                 size="sm"
                 onClick={() => handleEditResponse(response.id.toString())}
                 title="Edit Response"
-                className="h-8" // Added for consistent height
+                className="h-8"
               >
                 <Edit size={16} />
               </Button>
@@ -164,10 +217,8 @@ export default function ResponsesTable({
                     size="sm"
                     title="Delete Response"
                     className="h-8"
-                    // Disable the button when a deletion is in progress
                     disabled={isDeleting}
                   >
-                    {/* Show spinner or icon based on isDeleting state */}
                     {isDeleting ? <Spinner /> : <Trash2 size={16} />}
                   </Button>
                 </AlertDialogTrigger>
@@ -179,14 +230,11 @@ export default function ResponsesTable({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    {/* Disable Cancel button during deletion */}
                     <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => handleDeleteResponse(response.id)}
-                      // Disable the action button during deletion
                       disabled={isDeleting}
                     >
-                      {/* Show spinner inside the action button */}
                       {isDeleting && <Spinner />}
                       Continue
                     </AlertDialogAction>

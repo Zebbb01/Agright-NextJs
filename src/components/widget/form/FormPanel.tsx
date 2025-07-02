@@ -102,7 +102,7 @@ export default function FormPanel({
   const isLoading = creatingForm || updatingForm;
 
   return (
-    <div className="w-full max-w-3xl space-y-6 border p-6 rounded-xl shadow-md mb-8">
+    <div className="w-full max-w-3xl space-y-6 p-6 ">
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-foreground">
           {isReadOnly ? "View Form" : formId ? "Edit Form" : "Create New Form"}
@@ -139,7 +139,7 @@ export default function FormPanel({
 
       <div className="space-y-4">
         {fields.map((field) => (
-          <div key={field.id} className="border p-4 rounded-lg space-y-4">
+          <div key={field.id} className="p-4 space-y-4">
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor={`label-${field.id}`}>Question Label</Label>

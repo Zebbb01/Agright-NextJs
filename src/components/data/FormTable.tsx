@@ -1,7 +1,9 @@
+// src/components/data/FormTable.tsx
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, Edit } from "lucide-react"; // Import Eye and Edit icons
+import { Trash2, Eye, Edit } from "lucide-react";
 import { Spinner } from "../ui/spinner";
 import {
   AlertDialog,
@@ -12,78 +14,142 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  // AlertDialogTrigger, // AlertDialogTrigger is no longer needed here as the button directly triggers the dialog
 } from "@/components/ui/alert-dialog";
-import { useFormsTable } from "@/hooks/form/useFormsTable";
+import { useFormsTable } from "@/hooks/form/useFormsTable"; // This import is fine, but the props are changed
 import { Form } from "@/types/form";
-import { DataTable } from "../data-table"; // Your existing DataTable
-import { DataTableColumn } from "@/types/data-table"; // Import your custom column type
+import { DataTable } from "../data-table";
+import { DataTableColumn } from "@/types/data-table";
+import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
 
+// Define props for FormTable to receive filtered/paginated data and filter handlers
 type FormTableProps = {
-  setIsCreating: (isOpen: boolean) => void;
   isAdmin: boolean;
-  // ADD THESE NEW PROPS:
+  paginatedForms: Form[]; // Now receives already paginated and filtered forms
+  currentPage: number;
+  totalPages: number;
+  loading: boolean;
+  error: string | null;
+  handlePreviousPage: () => void;
+  handleNextPage: () => void;
   handleViewForm: (formId: string) => void;
   handleEditForm: (formId: string) => void;
+  handleDeleteForm: (formId: string, formName: string) => void;
+  isDeleting: boolean;
+  deleteDialogOpen: boolean;
+  setDeleteDialogOpen: (isOpen: boolean) => void;
+  formToDelete: Form | null;
+  handleDeleteConfirm: () => Promise<void>;
+  // Props for external search and column visibility (NEW)
+  onFilterChange: (filters: { searchTerm: string; visibleColumns: string[] }) => void;
+  initialSearchTerm: string;
+  initialVisibleColumns: string[];
 };
 
 export default function FormTable({
   isAdmin,
-  handleViewForm, // Destructure new prop
-  handleEditForm, // Destructure new prop
+  paginatedForms,
+  currentPage,
+  totalPages,
+  loading,
+  error,
+  handlePreviousPage,
+  handleNextPage,
+  handleViewForm,
+  handleEditForm,
+  handleDeleteForm,
+  isDeleting,
+  deleteDialogOpen,
+  setDeleteDialogOpen,
+  formToDelete,
+  handleDeleteConfirm,
+  onFilterChange, // Destructure new filter props
+  initialSearchTerm,
+  initialVisibleColumns,
 }: FormTableProps) {
-  const {
-    forms,
-    paginatedForms,
-    currentPage,
-    totalPages,
-    handlePreviousPage,
-    handleNextPage,
-    handleDeleteForm, // This now specifically handles opening the permanent delete dialog
-    isDeleting,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    formToDelete,
-    handleDeleteConfirm,
-  } = useFormsTable();
+  // Define all possible columns for the FormTable
+  const allColumns: DataTableColumn<Form>[] = useMemo(() => {
+    return [
+      {
+        id: "formName", // Unique ID for toggling
+        header: "Form Name",
+        accessor: "name",
+        searchable: true, // Make this column searchable
+        toggleable: true, // Make this column toggleable
+      },
+      {
+        id: "details", // Unique ID
+        header: "Details",
+        accessor: "details",
+        enableTooltip: true,
+        maxLength: 50,
+        searchable: true,
+        toggleable: true,
+      },
+      {
+        id: "date", // Unique ID
+        header: "Date",
+        accessor: (form) =>
+          form.date
+            ? new Date(form.date).toLocaleString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+              })
+            : "N/A",
+        searchable: false, // Dates might not be easily searchable as free text
+        toggleable: true,
+      },
+      {
+        id: "status", // Unique ID
+        header: "Status",
+        accessor: (form) =>
+          form.deletedAt ? `Deleted: ${new Date(form.deletedAt).toLocaleString()}` : "Active",
+        searchable: true,
+        toggleable: true,
+      },
+    ];
+  }, []);
 
-  // Define columns for the FormTable
-  const columns: DataTableColumn<Form>[] = [
-    { header: "Form Name", accessor: "name" },
-    {
-      header: "Details",
-      accessor: "details",
-      enableTooltip: true,
-      maxLength: 50,
-    },
-    {
-      header: "Date",
-      accessor: (form) =>
-        form.date
-          ? new Date(form.date).toLocaleString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: true,
-            })
-          : "N/A",
-    },
-    {
-      header: "Status",
-      accessor: (form) =>
-        form.deletedAt ? `Deleted: ${new Date(form.deletedAt).toLocaleString()}` : "Active",
-    },
-  ];
+  // Filter columns based on initialVisibleColumns for DataTable rendering
+  const displayedColumns = useMemo(() => {
+    return allColumns.filter(
+      (column) =>
+        column.id === undefined || initialVisibleColumns.includes(column.id)
+    );
+  }, [allColumns, initialVisibleColumns]);
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    onFilterChange({ searchTerm: newSearchTerm, visibleColumns: initialVisibleColumns });
+  };
+
+  const handleColumnVisibilityChange = (columnId: string, isChecked: boolean) => {
+    const newVisibleColumnIds = isChecked
+      ? [...initialVisibleColumns, columnId]
+      : initialVisibleColumns.filter((id) => id !== columnId);
+    onFilterChange({ searchTerm: initialSearchTerm, visibleColumns: newVisibleColumnIds });
+  };
 
   return (
     <div className="space-y-4">
+      {/* Render the new DataTableControls component */}
+      <DataTableControls<Form>
+        searchTerm={initialSearchTerm}
+        onSearchChange={handleSearchChange}
+        columns={allColumns} // Pass all possible columns for the dropdown
+        visibleColumnIds={initialVisibleColumns}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+      />
+
       <DataTable<Form>
-        columns={columns}
-        data={paginatedForms}
-        isLoading={false}
+        columns={displayedColumns} // Pass only the currently displayed columns to DataTable
+        data={paginatedForms} // Pass the already paginated and filtered data
+        isLoading={loading}
+        isError={!!error}
+        errorMessage={error || "Failed to load forms."}
         noDataMessage="No forms found."
         pagination={
           totalPages > 1
@@ -92,7 +158,7 @@ export default function FormTable({
                 totalPages,
                 onPreviousPage: handlePreviousPage,
                 onNextPage: handleNextPage,
-                totalItems: forms.length,
+                totalItems: paginatedForms.length, // Total items on current page after pagination/filtering
               }
             : undefined
         }
@@ -127,10 +193,10 @@ export default function FormTable({
               <Button
                 variant="destructive"
                 size="sm"
-                title="Delete Form Permanently" // Changed title for clarity
+                title="Delete Form Permanently"
                 className="h-8"
                 disabled={isDeleting}
-                onClick={() => handleDeleteForm(form.id, form.name)} // Directly call handleDeleteForm
+                onClick={() => handleDeleteForm(form.id, form.name)}
               >
                 {isDeleting ? <Spinner /> : <Trash2 size={16} />}
               </Button>
@@ -140,7 +206,6 @@ export default function FormTable({
       />
 
       {/* This AlertDialog is for the permanent delete confirmation. */}
-      {/* It's now the *only* dialog for deletion initiated from the table row. */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

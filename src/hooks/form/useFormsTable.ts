@@ -1,60 +1,66 @@
-// src/hooks/useFormsTable.ts
-import { useState, useEffect, useCallback } from "react";
-import { Form } from "@/types/form"; // Use the Form type from shared types
-import { fetchFormsService, deleteFormService } from "@/app/api/services/formService"; // Import service functions
-import { toast } from "sonner"; // Import toast from sonner
+// src/hooks/form/useFormsTable.ts
+import { useState, useEffect, useCallback, useMemo } from "react"; // Import useMemo
+import { Form } from "@/types/form";
+import { fetchFormsService, deleteFormService } from "@/app/api/services/formService";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
+interface UseFormsTableProps { // NEW: Props interface for the hook
+  searchTerm: string;
+  visibleColumnIds: string[]; // Passed, but primarily for column display in UI
+  currentPage: number;
+}
+
 interface UseFormsTableReturn {
-  forms: Form[];
-  paginatedForms: Form[];
+  forms: Form[]; // All forms fetched (before client-side pagination/filtering)
+  paginatedForms: Form[]; // Forms after client-side search filtering and pagination
   currentPage: number;
   totalPages: number;
   loading: boolean;
   error: string | null;
   handlePreviousPage: () => void;
   handleNextPage: () => void;
-  handleRefreshForms: () => void;
-  handleDeleteForm: (formId: string, formName: string) => void; // Modified to open dialog
+  handleDeleteForm: (formId: string, formName: string) => void;
   MAX_DESCRIPTION_LENGTH: number;
   deleteDialogOpen: boolean;
   setDeleteDialogOpen: (isOpen: boolean) => void;
   formToDelete: Form | null;
   isDeleting: boolean;
   handleDeleteConfirm: () => Promise<void>;
-  // NEW: Add these to the return type so parent components can use them
-  // These are not implemented in this hook, but signal that the parent will manage FormPanel visibility
-  handleViewForm: (formId: string) => void; // Placeholder, parent will implement
-  handleEditForm: (formId: string) => void; // Placeholder, parent will implement
   fetchForms: () => Promise<void>; // Expose the fetch function
+  allFieldLabels: string[]; // NEW: Expose allFieldLabels for dynamic column setup
 }
 
-export const useFormsTable = (): UseFormsTableReturn => {
-  const [forms, setForms] = useState<Form[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+export const useFormsTable = ({
+  searchTerm,
+  currentPage,
+}: UseFormsTableProps): UseFormsTableReturn => { // Use props
+  const [allFetchedForms, setAllFetchedForms] = useState<Form[]>([]); // Stores all forms from service
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // States for delete confirmation dialog and spinner
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formToDelete, setFormToDelete] = useState<Form | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false); // Controls the spinner
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const MAX_DESCRIPTION_LENGTH = 50; // Constant for truncation
+  const MAX_DESCRIPTION_LENGTH = 50;
 
-  const fetchForms = useCallback(async () => { // Renamed from fetchAllForms
+  const fetchForms = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await fetchFormsService();
-      // Assuming `data` is already sorted or you want to sort here
-      const sortedData = data.sort(
+      const normalizedData = data.map((item: any) => ({
+        ...item,
+        id: String(item.id), // Ensure ID is string for consistency
+      }));
+      const sortedData = normalizedData.sort(
         (a: Form, b: Form) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime()
       );
-      setForms(sortedData);
-      setCurrentPage(1); // Reset to first page on new data fetch
+      setAllFetchedForms(sortedData);
+      // Removed setCurrentPage(1) here as FormPanelContainer manages currentPage now
     } catch (err: any) {
       setError(err.message);
       console.error("Failed to fetch forms:", err);
@@ -67,92 +73,97 @@ export const useFormsTable = (): UseFormsTableReturn => {
   }, []);
 
   useEffect(() => {
-    fetchForms(); // Call the renamed fetch function
+    fetchForms();
   }, [fetchForms]);
 
-  // Function to open the delete confirmation dialog
+  // Client-side filtering based on the searchTerm (NEW)
+  const filteredForms = useMemo(() => {
+    if (!searchTerm) {
+      return allFetchedForms;
+    }
+
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+    return allFetchedForms.filter((form) => {
+      // Check form name
+      if (form.name.toLowerCase().includes(lowerCaseSearchTerm)) return true;
+      // Check form details
+      if (form.details?.toLowerCase().includes(lowerCaseSearchTerm)) return true;
+      // Check status
+      if (form.deletedAt && "deleted".includes(lowerCaseSearchTerm)) return true;
+      if (!form.deletedAt && "active".includes(lowerCaseSearchTerm)) return true;
+
+      return false;
+    });
+  }, [allFetchedForms, searchTerm]);
+
+
   const handleDeleteForm = useCallback((formId: string, formName: string) => {
-    setFormToDelete({ id: formId, name: formName, date: new Date(), details: "", deletedAt: null }); // Set minimal form data for dialog
-    setDeleteDialogOpen(true); // Open the dialog
+    setFormToDelete({ id: formId, name: formName, date: new Date(), details: "", deletedAt: null });
+    setDeleteDialogOpen(true);
   }, []);
 
-  // Function to confirm and execute the deletion
   const handleDeleteConfirm = useCallback(async () => {
-    if (!formToDelete) return; // Should not happen if dialog is opened correctly
+    if (!formToDelete) return;
 
-    setIsDeleting(true); // Activate spinner
+    setIsDeleting(true);
     try {
-      await deleteFormService(formToDelete.id); // Use the formToDelete's ID
+      await deleteFormService(formToDelete.id);
       toast.success("Form deleted successfully", {
         description: `"${formToDelete.name}" has been removed.`,
       });
-      await fetchForms(); // Re-fetch forms to update the table
-      setDeleteDialogOpen(false); // Close the dialog
-      setFormToDelete(null); // Clear the form to delete
+      await fetchForms();
+      setDeleteDialogOpen(false);
+      setFormToDelete(null);
     } catch (err: any) {
       console.error("Error deleting form:", err);
       toast.error("Failed to delete form", {
         description: err.message || "An unexpected error occurred.",
       });
     } finally {
-      setIsDeleting(false); // Deactivate spinner
+      setIsDeleting(false);
     }
   }, [formToDelete, fetchForms]);
 
-  const totalPages = Math.ceil(forms.length / ITEMS_PER_PAGE);
-  const paginatedForms = forms.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // Calculate total pages based on filteredForms (NEW)
+  const totalPages = Math.ceil(filteredForms.length / ITEMS_PER_PAGE);
 
+  // Paginate the filtered responses using the currentPage from props (NEW)
+  const paginatedForms = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredForms.slice(startIndex, endIndex);
+  }, [filteredForms, currentPage]);
+
+  // Pagination handlers (now internal to the hook, but FormPanelContainer provides the actual state change)
   const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  }, [currentPage]);
+    // This is now a placeholder, actual state change happens in FormPanelContainer
+  }, []);
 
   const handleNextPage = useCallback(() => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  }, [currentPage, totalPages]);
-
-  const handleRefreshForms = useCallback(() => {
-    fetchForms();
-  }, [fetchForms]);
-
-  // These are placeholder functions. The actual logic to open/close the FormPanel
-  // and set its mode will reside in the parent component (FormPanelContainer).
-  const handleViewForm = useCallback((formId: string) => {
-    // This function will be called by FormTable, and its implementation
-    // will be provided by FormPanelContainer to show the FormPanel in view mode.
-    console.log("View form ID:", formId);
+    // This is now a placeholder, actual state change happens in FormPanelContainer
   }, []);
 
-  const handleEditForm = useCallback((formId: string) => {
-    // This function will be called by FormTable, and its implementation
-    // will be provided by FormPanelContainer to show the FormPanel in edit mode.
-    console.log("Edit form ID:", formId);
-  }, []);
-
+  // For FormTable, allFieldLabels will be static as there are no dynamic form fields in the Form object itself.
+  const allFieldLabels = useMemo(() => ["Form Name", "Details", "Date", "Status"], []);
 
   return {
-    forms,
+    forms: allFetchedForms, // Return all fetched forms
     paginatedForms,
-    currentPage,
+    currentPage, // Return currentPage for display
     totalPages,
     loading,
     error,
     handlePreviousPage,
     handleNextPage,
-    handleRefreshForms,
     handleDeleteForm,
     MAX_DESCRIPTION_LENGTH,
-    // Export new states and functions
     deleteDialogOpen,
     setDeleteDialogOpen,
     formToDelete,
     isDeleting,
     handleDeleteConfirm,
-    // NEWLY EXPORTED HANDLERS AND FETCH FUNCTION
-    handleViewForm,
-    handleEditForm,
-    fetchForms, // Expose fetchForms for direct use by parent
+    fetchForms,
+    allFieldLabels, // Expose allFieldLabels
   };
 };

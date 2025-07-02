@@ -25,11 +25,11 @@ import { useUsersTable } from "@/hooks/user/useUsersTable";
 import { UserType } from "@/types/user";
 import { DataTable } from "@/components/data-table";
 import { DataTableColumn } from "@/types/data-table";
-// TableRow and TableCell are no longer needed here
+import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
 
 export default function UsersTable() {
   const {
-    users,
+    // Keep existing states/handlers
     roles,
     editingUser,
     setEditingUser,
@@ -37,30 +37,74 @@ export default function UsersTable() {
     deleteDialogOpen,
     setDeleteDialogOpen,
     isLoading,
-    currentPage,
-    totalPages,
-    paginatedUsers,
     handleAddUser,
     handleUpdateUser,
     handleDeleteClick,
     handleDeleteConfirm,
     handleEditClick,
+
+    // New states/handlers for search and pagination
+    filteredAndPaginatedUsers, // Use the new filtered and paginated data
+    totalFilteredUsers, // Total count of filtered users
+    currentPage,
+    totalPages,
+    searchTerm,
+    setSearchTerm,
+    visibleColumnIds,
+    handleColumnVisibilityChange,
+    displayedColumns, // Use the new displayed columns
     handlePrevious,
     handleNext,
   } = useUsersTable();
 
-  const columns: DataTableColumn<UserType>[] = [
-    { header: "Name", accessor: "name", className: "font-medium" },
-    { header: "Email", accessor: "email" },
+  // Define all possible columns here, including their IDs, searchable, and toggleable properties
+  // These will be used by DataTableControls and filtered by useUsersTable for DataTable
+  const allColumns: DataTableColumn<UserType>[] = [
     {
+      id: "name", // Add unique ID
+      header: "Name",
+      accessor: "name",
+      className: "font-medium",
+      searchable: true,
+      toggleable: true,
+    },
+    {
+      id: "email", // Add unique ID
+      header: "Email",
+      accessor: "email",
+      searchable: true,
+      toggleable: true,
+    },
+    {
+      id: "role", // Add unique ID
       header: "Role",
-      accessor: (user) => (
-        <Badge variant="default">
-          {user.role?.name ?? "Unknown Role"}
-        </Badge>
-      ),
+      accessor: (user) => user.role?.name ?? "Unknown Role", // For search, use the string directly
+      // For display, you might still render the Badge within DataTable's column definition if needed
+      // but for DataTableControls, the string value is sufficient for header and search
+      searchable: true,
+      toggleable: true,
     },
   ];
+
+  // Re-define columns array for DataTable to render the Badge,
+  // while still using the accessor for search in the hook.
+  // This is a common pattern when the search needs the raw value,
+  // but the display needs a ReactNode.
+  const columnsForDataTable: DataTableColumn<UserType>[] = displayedColumns.map(
+    (col) => {
+      if (col.id === "role") {
+        return {
+          ...col,
+          accessor: (user) => (
+            <Badge variant="default">
+              {user.role?.name ?? "Unknown Role"}
+            </Badge>
+          ),
+        };
+      }
+      return col;
+    }
+  );
 
   return (
     <div className="space-y-4">
@@ -81,9 +125,18 @@ export default function UsersTable() {
         roles={roles}
       />
 
+      {/* Add DataTableControls here */}
+      <DataTableControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        columns={allColumns} // Pass all defined columns to controls for toggling
+        visibleColumnIds={visibleColumnIds}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+      />
+
       <DataTable<UserType>
-        columns={columns}
-        data={paginatedUsers}
+        columns={columnsForDataTable} // Use the adjusted columns for rendering
+        data={filteredAndPaginatedUsers} // Use the filtered and paginated data
         isLoading={isLoading}
         noDataMessage="No users found. Create your first user to get started."
         pagination={
@@ -93,7 +146,7 @@ export default function UsersTable() {
                 totalPages,
                 onPreviousPage: handlePrevious,
                 onNextPage: handleNext,
-                totalItems: users.length, // Pass total items for footer calculation
+                totalItems: totalFilteredUsers, // Pass total count of filtered users
               }
             : undefined
         }

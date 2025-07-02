@@ -358,23 +358,6 @@ export default function ResponsePanel({
       ))}
 
       <div className="flex justify-end gap-2 pt-4">
-        {responseId && !isReadOnly && ( // Only show delete button if editing an existing response and not read-only
-          <Button
-            variant="destructive"
-            onClick={onDelete}
-            disabled={deletingResponse || submittingResponse}
-            className="min-w-[120px]"
-          >
-            {deletingResponse ? (
-              <div className="flex items-center gap-2">
-                <Spinner />
-                <span>Deleting...</span>
-              </div>
-            ) : (
-              "Delete Permanently"
-            )}
-          </Button>
-        )}
         <Button
           variant="destructive"
           onClick={() => setIsOpen(false)}

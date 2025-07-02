@@ -11,6 +11,7 @@ import {
 } from "@/app/api/services/formService"; // Import services
 import { FormSummary } from "@/types/form";
 import { RadialChartPanel } from "@/components/widget/graphs/RadialChartPanel";
+import { ArialChartPanel } from "@/components/widget/graphs/ArialChartPanel";
 
 export default function ChartPage() {
   const [summaryData, setSummaryData] = useState<FormSummary[]>([]);
@@ -79,7 +80,7 @@ export default function ChartPage() {
 
   return (
     <>
-      <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4 grid grid-cols-1 gap-4">
         {/*--------- Container ---------*/}
         <div className="grid grid-rows-1 space-y-3">
           {/*--------- First Row ---------*/}
@@ -122,13 +123,18 @@ export default function ChartPage() {
             </div>
             {/* End of Memory & Google hits Container */}
           </div>
+          
+          <ArialChartPanel />
+
+          <FormSummaryTable
+            summaryData={summaryData}
+            loading={loading}
+            error={error}
+          />
         </div>
       </div>
-      <FormSummaryTable
-        summaryData={summaryData}
-        loading={loading}
-        error={error}
-      />
+
+
     </>
   );
 }

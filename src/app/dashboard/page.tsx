@@ -110,7 +110,7 @@ export default function DashboardHome() {
         {/*--------- First Row ---------*/}
         <div className="grid grid-cols-[4fr_2fr] gap-3">
           {/* Memory/Cpu, Login & Server Request Container */}
-          <div className="grid grid-rows-2 gap-3">
+          <div className="grid grid-rows-1 gap-3">
             {/* Memory/Cpu & Login Row */}
             <div className="grid grid-cols-2 gap-3">
               <LineChartPanel />
@@ -118,14 +118,14 @@ export default function DashboardHome() {
             </div>
 
             {/* Server Request Row */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* <div className="grid grid-cols-1 gap-3">
               <BarChartPanel />
-            </div>
+            </div> */}
           </div>
           {/* End of Memory/Cpu, Login & Server Request Container */}
 
           {/* Memory & Google hits Container */}
-          <div className="grid grid-rows-2 gap-3">
+          <div className="grid grid-rows-1 gap-3">
             {/* Memory & Google hits Row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Memory & Google hits Row */}
@@ -141,9 +141,9 @@ export default function DashboardHome() {
             </div>
 
             {/* Google Hits Request Row */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* <div className="grid grid-cols-1 gap-3">
               <LineChartPanel />
-            </div>
+            </div> */}
           </div>
           {/* End of Memory & Google hits Container */}
         </div>

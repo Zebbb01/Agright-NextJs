@@ -48,7 +48,7 @@ export default function FormSelector() {
       <h2 className="text-xl font-semibold text-center">
         Choose a Form to Respond
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
         {forms.map((form) => (
           <Card
             key={form.id}

@@ -1,6 +1,7 @@
 // src/components/data-table.tsx
 "use client";
 
+import { useMemo } from "react"; // Only useMemo is needed internally now for filteredData and displayedColumns
 import {
   Table,
   TableBody,
@@ -24,7 +25,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { Spinner } from "./ui/spinner";
-import { DataTableProps, DataTableColumn } from "@/types/data-table"; // Ensure DataTableProps and DataTableColumn are imported from here
+import { DataTableProps } from "@/types/data-table"; // Ensure DataTableProps is imported
 
 const DEFAULT_MAX_LENGTH = 50;
 
@@ -43,8 +44,20 @@ export function DataTable<T>({
   errorMessage = "An error occurred while loading data.",
   noDataMessage = "No data available.",
   renderRowActions,
-  pagination, // renderFooter prop will be removed from DataTableProps
+  pagination,
+  // Removed onFilterChange, initialSearchTerm, initialVisibleColumns props
 }: DataTableProps<T>) {
+  // filteredData is now simply `data` as filtering is done upstream in the hook/container
+  // The `data` prop passed to DataTable is assumed to be already filtered and paginated.
+  // The `useMemo` for filteredData is no longer needed here for actual filtering logic.
+  // We'll keep it for clarity that `data` represents the filtered set.
+  const filteredData = useMemo(() => data, [data]);
+
+  // displayedColumns will now depend on the `columns` prop, which will already be filtered for visibility
+  // in the parent component (ResponsesTable/ResponseContainer).
+  // So, no internal visibleColumns state or filtering by visibleColumnIds in DataTable.
+  const displayedColumns = useMemo(() => columns, [columns]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-48">
@@ -69,31 +82,32 @@ export function DataTable<T>({
     );
   }
 
-  // Calculate colSpan for the footer. It's the number of columns,
-  // plus 1 if there's an actions column.
-  const colSpanForFooter = columns.length + (renderRowActions ? 1 : 0);
+  // Calculate colSpan for the footer.
+  const colSpanForFooter = displayedColumns.length + (renderRowActions ? 1 : 0);
 
   return (
     <div className="space-y-4">
+      {/* Removed Search Input and Column Visibility Toggle from here */}
+
       <TooltipProvider>
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column, index) => (
-                <TableHead key={index} className={column.className}>
+              {displayedColumns.map((column, index) => (
+                <TableHead key={column.id || index} className={column.className}>
                   {column.header}
                 </TableHead>
               ))}
               {renderRowActions && (
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item, rowIndex) => (
+            {filteredData.map((item, rowIndex) => (
               <TableRow key={rowIndex}>
-                {columns.map((column, colIndex) => (
-                  <TableCell key={colIndex} className={column.className}>
+                {displayedColumns.map((column, colIndex) => (
+                  <TableCell key={column.id || colIndex} className={column.className}>
                     {(() => {
                       const value =
                         typeof column.accessor === "function"
@@ -127,7 +141,7 @@ export function DataTable<T>({
                   </TableCell>
                 ))}
                 {renderRowActions && (
-                  <TableCell className="text-right">
+                  <TableCell className="flex items-center justify-center h-full">
                     {renderRowActions(item)}
                   </TableCell>
                 )}
@@ -140,11 +154,10 @@ export function DataTable<T>({
                 colSpan={colSpanForFooter}
                 className="text-muted-foreground"
               >
-                {/* Use pagination.totalItems if available, otherwise fallback to data.length */}
                 Total:{" "}
                 {pagination?.totalItems !== undefined
                   ? pagination.totalItems
-                  : data.length}
+                  : filteredData.length}{" "}
               </TableCell>
             </TableRow>
           </TableFooter>

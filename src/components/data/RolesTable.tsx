@@ -26,7 +26,7 @@ import { useRoleTable } from "@/hooks/role/useRoleTable";
 import { RoleType } from "@/types/user";
 import { DataTable } from "@/components/data-table";
 import { DataTableColumn } from "@/types/data-table";
-// TableCell and TableRow are no longer needed here
+import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
 
 export default function RolesTable() {
   const {
@@ -47,17 +47,34 @@ export default function RolesTable() {
     handleEditClick,
     handlePrevious,
     handleNext,
+    searchTerm, // New: from useRoleTable
+    setSearchTerm, // New: from useRoleTable
+    visibleColumnIds, // New: from useRoleTable
+    handleColumnVisibilityChange, // New: from useRoleTable
+    displayedColumns, // New: from useRoleTable
   } = useRoleTable();
 
-  const columns: DataTableColumn<RoleType>[] = [
-    { header: "Role", accessor: "name", className: "font-medium" },
+  // Define all possible columns, including their IDs, searchable, and toggleable properties
+  // The actual displayed columns will be filtered by `useRoleTable` based on `visibleColumnIds`
+  const allColumns: DataTableColumn<RoleType>[] = [
     {
+      id: "name", // Add a unique ID
+      header: "Role",
+      accessor: "name",
+      className: "font-medium",
+      searchable: true, // Make this column searchable
+      toggleable: true, // Make this column toggleable
+    },
+    {
+      id: "status", // Add a unique ID
       header: "Status",
       accessor: (role) => (
         <Badge variant={role.status === 1 ? "default" : "destructive"}>
           {role.status === 1 ? "Active" : "Inactive"}
         </Badge>
       ),
+      searchable: true, // Make this column searchable (based on the rendered text)
+      toggleable: true, // Make this column toggleable
     },
   ];
 
@@ -78,8 +95,17 @@ export default function RolesTable() {
         onUpdateRole={handleUpdateRole}
       />
 
+      {/* Add DataTableControls here */}
+      <DataTableControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        columns={allColumns} // Pass all defined columns
+        visibleColumnIds={visibleColumnIds}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+      />
+
       <DataTable<RoleType>
-        columns={columns}
+        columns={displayedColumns} // Use the filtered columns from the hook
         data={roles}
         isLoading={isLoading}
         noDataMessage="No roles found. Create your first role to get started."
@@ -90,7 +116,7 @@ export default function RolesTable() {
                 totalPages,
                 onPreviousPage: handlePrevious,
                 onNextPage: handleNext,
-                totalItems: totalRoles, // Pass total items for footer calculation
+                totalItems: totalRoles,
               }
             : undefined
         }
