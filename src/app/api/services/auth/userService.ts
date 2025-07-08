@@ -1,14 +1,13 @@
+import { toast } from "sonner"; // Import toast for notifications
+
 export async function fetchUsersAndRoles() {
   try {
     const [usersRes, rolesRes] = await Promise.all([
-      // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
       fetch("/api/auth/users"),
-      // CORRECTED: Changed /api/routes/auth/roles to /api/auth/roles
       fetch("/api/auth/roles"),
     ]);
 
     if (!usersRes.ok || !rolesRes.ok) {
-      // It's good practice to get more specific error messages here if possible
       const usersError = usersRes.ok ? null : await usersRes.json();
       const rolesError = rolesRes.ok ? null : await rolesRes.json();
 
@@ -27,14 +26,8 @@ export async function fetchUsersAndRoles() {
   }
 }
 
-import { toast } from "sonner"; // Import toast for notifications
-
 export async function deleteUserById(userId: number) {
-  // Removed the confirm() dialog as per request.
-  // A confirmation dialog should ideally be implemented in the UI component calling this function.
-
   try {
-    // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
     const response = await fetch("/api/auth/users", {
       method: "DELETE",
       headers: {
@@ -45,15 +38,13 @@ export async function deleteUserById(userId: number) {
 
     if (!response.ok) {
       const data = await response.json();
-      // Replace alert with toast for better UI/UX
       toast.error(`Failed to delete user: ${data.error || response.statusText}`);
       return false;
     }
 
-    toast.success("User deleted successfully!"); // Success toast
+    toast.success("User deleted successfully!");
     return true;
   } catch (error) {
-    // Replace alert with toast for better UI/UX
     toast.error("Failed to delete user.");
     console.error(error);
     return false;
@@ -66,7 +57,6 @@ export async function createUser(userData: {
   password: string;
   roleName: string;
 }) {
-  // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
   const response = await fetch("/api/auth/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -81,7 +71,6 @@ export async function createUser(userData: {
   return await response.json();
 }
 
-// Edit user
 export async function updateUser(userData: {
   id: number;
   username: string;
@@ -89,7 +78,6 @@ export async function updateUser(userData: {
   password?: string;
   roleName: string;
 }) {
-  // CORRECTED: Changed /api/routes/auth/users to /api/auth/users
   const response = await fetch("/api/auth/users", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -103,4 +91,3 @@ export async function updateUser(userData: {
 
   return await response.json();
 }
-  

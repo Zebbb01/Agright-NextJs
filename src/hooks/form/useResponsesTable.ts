@@ -4,7 +4,7 @@ import { FormResponse } from "@/types/data-table"; // Use the FormResponse type 
 import {
   fetchFormResponsesService,
   deleteFormResponseService,
-} from "@/app/api/services/formService"; // Import service functions
+} from "@/services"; // Import service functions
 
 const ITEMS_PER_PAGE = 10;
 

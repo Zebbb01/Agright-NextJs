@@ -1,8 +1,8 @@
-// src/components/data-table-controls.tsx
+// src/components/table/data-table-controls.tsx
 "use client";
 
 import React from "react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 import { Settings2 } from "lucide-react";
 import { DataTableColumn } from "@/types/data-table";
 
@@ -51,7 +51,7 @@ export function DataTableControls<T>({
           <DropdownMenuLabel>Filter Columns</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {columns
-            .filter((column) => column.toggleable !== false && column.id) // Only show toggleable columns with an ID
+            .filter((column) => column.toggleable !== false && column.id)
             .map((column) => (
               <DropdownMenuCheckboxItem
                 key={column.id}

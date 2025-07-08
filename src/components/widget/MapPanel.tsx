@@ -4,7 +4,7 @@ import { GoogleMap, Marker, MarkerClusterer } from "@react-google-maps/api";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
-import { useLocations } from "@/hooks/map/useLocations";
+import { useLocations } from "@/hooks/location/useLocations";
 import { motion, AnimatePresence } from "framer-motion";
 import { Spinner } from "../ui/spinner";
 

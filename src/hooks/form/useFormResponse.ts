@@ -8,7 +8,7 @@ import {
   updateFormResponseService,
   fetchFormResponseService,
   permanentlyDeleteFormResponseService, // Import the new permanent delete service
-} from "@/app/api/services/formService";
+} from "@/services";
 
 interface UseFormResponseProps {
   formId: string;

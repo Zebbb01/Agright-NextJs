@@ -1,5 +1,4 @@
-// src/app/api/services/mapService.ts
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma'; // Assuming this import path is correct and accessible from client-side services
 
 export async function getAllLocationsWithImages() {
   try {
@@ -14,8 +13,6 @@ export async function getAllLocationsWithImages() {
       },
     });
 
-    // You might want to transform the data here to fit your MapPanel's expected format
-    // For example, ensuring each location has at least one image URL or a default.
     return locations.map((location) => ({
       id: location.id,
       latitude: location.latitude,
@@ -24,7 +21,6 @@ export async function getAllLocationsWithImages() {
       terrain: location.terrain,
       typeOfDisease: location.typeOfDisease,
       blocks: location.blocks,
-      // Take the first image's secureUrl, or provide a fallback if no images
       image: location.imageUploads.length > 0 ? location.imageUploads[0].secureUrl : "/placeholder-image.jpg", // Add a placeholder image path
     }));
   } catch (error) {

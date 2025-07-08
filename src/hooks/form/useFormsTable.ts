@@ -1,7 +1,7 @@
 // src/hooks/form/useFormsTable.ts
 import { useState, useEffect, useCallback, useMemo } from "react"; // Import useMemo
 import { Form } from "@/types/form";
-import { fetchFormsService, deleteFormService } from "@/app/api/services/formService";
+import { fetchFormsService, deleteFormService } from "@/services";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;

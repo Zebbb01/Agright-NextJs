@@ -1,7 +1,7 @@
 // src/hooks/useUserForm.ts
 import { useState } from "react";
 import { toast } from "sonner";
-import { createUser } from "@/app/api/services/userService";
+import { createUser } from "@/services";
 import { UserType, RoleType } from "@/types/user";
 
 export function useUserForm(

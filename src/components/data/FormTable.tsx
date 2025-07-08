@@ -15,11 +15,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useFormsTable } from "@/hooks/form/useFormsTable"; // This import is fine, but the props are changed
 import { Form } from "@/types/form";
-import { DataTable } from "../data-table";
+import { DataTable } from "../table/data-table";
 import { DataTableColumn } from "@/types/data-table";
-import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
+import { DataTableControls } from "@/components/table/data-table-controls"; // Import the new component
 
 // Define props for FormTable to receive filtered/paginated data and filter handlers
 type FormTableProps = {
@@ -211,8 +210,8 @@ export default function FormTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will permanently delete the form:{" "}
-              <strong>{formToDelete?.name}</strong>. This cannot be undone.
+              This action will delete the form:{" "}
+              <strong>{formToDelete?.name}</strong>. You can restore it later from the archive.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -223,7 +222,7 @@ export default function FormTable({
               disabled={isDeleting}
             >
               {isDeleting && <Spinner />}
-              Delete Permanently
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

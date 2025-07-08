@@ -1,7 +1,7 @@
 // src/hooks/useForms.ts
 import { useState, useEffect } from 'react';
 import { Form } from '@/types/form';
-import { fetchFormsService } from '@/app/api/services/formService'; // Corrected import path
+import { fetchFormsService } from '@/services'; // Corrected import path
 
 interface UseFormsReturn {
   forms: Form[];

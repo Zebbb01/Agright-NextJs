@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "../data-table";
+import { DataTable } from "../table/data-table";
 import { DataTableColumn } from "@/types/data-table";
 import { FormSummary, FormSummaryTableProps } from "@/types/form"; // Adjust the import path as necessary
 
@@ -38,8 +38,8 @@ export default function FormSummaryTable({
         pagination={{
           currentPage: 1, // Default or actual page
           totalPages: 1, // Default or actual total pages
-          onPreviousPage: () => {}, // Dummy function
-          onNextPage: () => {}, // Dummy function
+          onPreviousPage: () => { }, // Dummy function
+          onNextPage: () => { }, // Dummy function
           totalItems: summaryData.length, // The crucial part for the footer
         }}
       />

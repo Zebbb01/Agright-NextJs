@@ -1,7 +1,7 @@
-// src/components/data-table.tsx
+// src/components/table/data-table.tsx
 "use client";
 
-import { useMemo } from "react"; // Only useMemo is needed internally now for filteredData and displayedColumns
+import { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -10,22 +10,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "../ui/table";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "./ui/pagination";
+} from "../ui/pagination";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
-import { Spinner } from "./ui/spinner";
-import { DataTableProps } from "@/types/data-table"; // Ensure DataTableProps is imported
+} from "../ui/tooltip";
+import { Spinner } from "../ui/spinner";
+import { DataTableProps, DataTableColumn } from "@/types/data-table";
+import { DataTableControls } from "./data-table-controls";
 
 const DEFAULT_MAX_LENGTH = 50;
 
@@ -36,6 +37,27 @@ const truncateText = (text: string, maxLength: number) => {
   return text.substring(0, maxLength) + "...";
 };
 
+// Helper function to get searchable text from a data item
+function getSearchableText<T>(item: T, column: DataTableColumn<T>): string {
+  if (!column.searchable) return "";
+  
+  let value: any;
+  
+  if (column.searchAccessor) {
+    value = column.searchAccessor(item);
+  } else if (typeof column.accessor === "function") {
+    // For functions that return React nodes, we can't search them effectively
+    // Unless they also provide a searchAccessor
+    return "";
+  } else {
+    value = item[column.accessor];
+  }
+  
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) return value.join(" ");
+  return String(value).toLowerCase();
+}
+
 export function DataTable<T>({
   columns,
   data,
@@ -45,18 +67,67 @@ export function DataTable<T>({
   noDataMessage = "No data available.",
   renderRowActions,
   pagination,
-  // Removed onFilterChange, initialSearchTerm, initialVisibleColumns props
+  // New props for search and column management
+  searchTerm = "",
+  onSearchChange,
+  visibleColumnIds,
+  onColumnVisibilityChange,
+  defaultVisibleColumns = 7,
+  hideColumns = [], // Columns to hide by default (like IDs, status)
 }: DataTableProps<T>) {
-  // filteredData is now simply `data` as filtering is done upstream in the hook/container
-  // The `data` prop passed to DataTable is assumed to be already filtered and paginated.
-  // The `useMemo` for filteredData is no longer needed here for actual filtering logic.
-  // We'll keep it for clarity that `data` represents the filtered set.
-  const filteredData = useMemo(() => data, [data]);
+  
+  // Filter data based on search term
+  const filteredData = useMemo(() => {
+    if (!searchTerm.trim()) return data;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return data.filter((item) => {
+      return columns.some((column) => {
+        const searchableText = getSearchableText(item, column);
+        return searchableText.includes(searchLower);
+      });
+    });
+  }, [data, searchTerm, columns]);
 
-  // displayedColumns will now depend on the `columns` prop, which will already be filtered for visibility
-  // in the parent component (ResponsesTable/ResponseContainer).
-  // So, no internal visibleColumns state or filtering by visibleColumnIds in DataTable.
-  const displayedColumns = useMemo(() => columns, [columns]);
+  // Determine initial visible columns if not provided
+  const initialVisibleColumns = useMemo(() => {
+    if (visibleColumnIds && visibleColumnIds.length > 0) {
+      return visibleColumnIds;
+    }
+    
+    // Auto-select first N toggleable columns, excluding hidden ones
+    const toggleableColumns = columns.filter(col => 
+      col.toggleable !== false && 
+      col.id && 
+      !hideColumns.includes(col.id)
+    );
+    
+    return toggleableColumns
+      .slice(0, defaultVisibleColumns)
+      .map(col => col.id!)
+      .filter(Boolean);
+  }, [columns, visibleColumnIds, defaultVisibleColumns, hideColumns]);
+
+  // Filter displayed columns based on visibility settings
+  const displayedColumns = useMemo(() => {
+    const visibleIds = visibleColumnIds || initialVisibleColumns;
+    return columns.filter((column) => {
+      // Always show non-toggleable columns
+      if (column.toggleable === false) return true;
+      // Show if column has no ID (shouldn't happen but fallback)
+      if (!column.id) return true;
+      // Show if column is in visible list
+      return visibleIds.includes(column.id);
+    });
+  }, [columns, visibleColumnIds, initialVisibleColumns]);
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    onSearchChange?.(newSearchTerm);
+  };
+
+  const handleColumnVisibilityChange = (columnId: string, isChecked: boolean) => {
+    onColumnVisibilityChange?.(columnId, isChecked);
+  };
 
   if (isLoading) {
     return (
@@ -82,12 +153,20 @@ export function DataTable<T>({
     );
   }
 
-  // Calculate colSpan for the footer.
   const colSpanForFooter = displayedColumns.length + (renderRowActions ? 1 : 0);
 
   return (
     <div className="space-y-4">
-      {/* Removed Search Input and Column Visibility Toggle from here */}
+      {/* Show controls if search or column management is enabled */}
+      {(onSearchChange || onColumnVisibilityChange) && (
+        <DataTableControls<T>
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          columns={columns}
+          visibleColumnIds={visibleColumnIds || initialVisibleColumns}
+          onColumnVisibilityChange={handleColumnVisibilityChange}
+        />
+      )}
 
       <TooltipProvider>
         <Table>
@@ -158,6 +237,11 @@ export function DataTable<T>({
                 {pagination?.totalItems !== undefined
                   ? pagination.totalItems
                   : filteredData.length}{" "}
+                {searchTerm && filteredData.length !== data.length && (
+                  <span className="text-sm">
+                    (filtered from {data.length})
+                  </span>
+                )}
               </TableCell>
             </TableRow>
           </TableFooter>

@@ -8,7 +8,7 @@ import {
   permanentDeleteForm,
   restoreResponse,
   permanentDeleteResponse,
-} from "@/app/api/services/archiveService";
+} from "@/services";
 import { Form, FormResponse } from "@/types/form";
 import { DataTableColumn } from "@/types/data-table"; // Import DataTableColumn if not already
 

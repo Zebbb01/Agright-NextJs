@@ -24,9 +24,9 @@ import RolesPanel from "../widget/auth/role/RolesPanel";
 import EditRoleModal from "../widget/auth/role/EditRoleModal";
 import { useRoleTable } from "@/hooks/role/useRoleTable";
 import { RoleType } from "@/types/user";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/table/data-table";
 import { DataTableColumn } from "@/types/data-table";
-import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
+import { DataTableControls } from "@/components/table/data-table-controls"; // Import the new component
 
 export default function RolesTable() {
   const {
@@ -112,12 +112,12 @@ export default function RolesTable() {
         pagination={
           totalPages > 1
             ? {
-                currentPage,
-                totalPages,
-                onPreviousPage: handlePrevious,
-                onNextPage: handleNext,
-                totalItems: totalRoles,
-              }
+              currentPage,
+              totalPages,
+              onPreviousPage: handlePrevious,
+              onNextPage: handleNext,
+              totalItems: totalRoles,
+            }
             : undefined
         }
         renderRowActions={(role) => (

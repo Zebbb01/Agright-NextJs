@@ -5,9 +5,8 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, Eye, Edit } from "lucide-react";
 import { ExtendedResponsesTableProps, FormResponse } from "@/types/data-table";
-import { DataTable } from "../data-table";
+import { DataTable } from "../table/data-table";
 import { DataTableColumn } from "@/types/data-table";
-import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
 
 import {
   AlertDialog,
@@ -36,11 +35,12 @@ export default function ResponsesTable({
   handleNextPage,
   handleViewResponse,
   handleEditResponse,
-  onFilterChange, // Keep this prop to receive updates from DataTableControls
-  initialSearchTerm,
-  initialVisibleColumns,
+  onFilterChange,
+  searchTerm,
+  visibleColumnIds,
 }: ExtendedResponsesTableProps) {
-  // Dynamically define all possible columns
+  
+  // Define all possible columns with proper search accessors
   const allColumns: DataTableColumn<FormResponse>[] = useMemo(() => {
     const baseColumns: DataTableColumn<FormResponse>[] = [
       {
@@ -49,7 +49,8 @@ export default function ResponsesTable({
         accessor: "id",
         className: "font-medium",
         searchable: true,
-        toggleable: false,
+        toggleable: true, // Made toggleable so it can be hidden
+        searchAccessor: (response) => response.id,
       },
       {
         id: "userName",
@@ -57,6 +58,7 @@ export default function ResponsesTable({
         accessor: (response) => response.user?.name || `User ID: ${response.userId}`,
         searchable: true,
         toggleable: true,
+        searchAccessor: (response) => response.user?.name || response.userId,
       },
     ];
 
@@ -95,6 +97,15 @@ export default function ResponsesTable({
       maxLength: 20,
       searchable: true,
       toggleable: true,
+      searchAccessor: (response) => {
+        const value = response.values[label];
+        if (Array.isArray(value)) {
+          return value.join(" ");
+        } else if (value !== null && value !== undefined) {
+          return value.toString();
+        }
+        return "";
+      },
     }));
 
     const staticColumns: DataTableColumn<FormResponse>[] = [
@@ -111,8 +122,18 @@ export default function ResponsesTable({
             second: "2-digit",
             hour12: true,
           }),
-        searchable: false,
+        searchable: true,
         toggleable: true,
+        searchAccessor: (response) => 
+          new Date(response.createdAt).toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+          }),
       },
       {
         id: "status",
@@ -122,55 +143,41 @@ export default function ResponsesTable({
             ? `Deleted: ${new Date(response.deletedAt).toLocaleString()}`
             : "Active",
         searchable: true,
-        toggleable: true,
+        toggleable: true, // Made toggleable so it can be hidden
+        searchAccessor: (response) =>
+          response.deletedAt ? "deleted" : "active",
       },
     ];
 
     return [...baseColumns, ...dynamicColumns, ...staticColumns];
   }, [allFieldLabels]);
 
-  // Filter columns based on initialVisibleColumns
-  const displayedColumns = useMemo(() => {
-    // If initialVisibleColumns is provided, filter based on it.
-    // Otherwise, assume all toggleable columns should be displayed initially.
-    if (initialVisibleColumns && initialVisibleColumns.length > 0) {
-      return allColumns.filter((column) =>
-        column.id === undefined || initialVisibleColumns.includes(column.id)
-      );
-    }
-    // Default to showing all toggleable columns
-    return allColumns.filter((column) => column.toggleable !== false);
-  }, [allColumns, initialVisibleColumns]);
-
   const handleSearchChange = (newSearchTerm: string) => {
-    onFilterChange({ searchTerm: newSearchTerm, visibleColumns: initialVisibleColumns });
+    onFilterChange({ searchTerm: newSearchTerm, visibleColumns: visibleColumnIds });
   };
 
   const handleColumnVisibilityChange = (columnId: string, isChecked: boolean) => {
     const newVisibleColumnIds = isChecked
-      ? [...initialVisibleColumns, columnId]
-      : initialVisibleColumns.filter((id) => id !== columnId);
-    onFilterChange({ searchTerm: initialSearchTerm, visibleColumns: newVisibleColumnIds });
+      ? [...visibleColumnIds, columnId]
+      : visibleColumnIds.filter((id) => id !== columnId);
+    onFilterChange({ searchTerm: searchTerm, visibleColumns: newVisibleColumnIds });
   };
 
   return (
     <div className="space-y-4">
-      {/* Render the new DataTableControls component */}
-      <DataTableControls<FormResponse>
-        searchTerm={initialSearchTerm}
-        onSearchChange={handleSearchChange}
-        columns={allColumns} // Pass all possible columns for the dropdown
-        visibleColumnIds={initialVisibleColumns}
-        onColumnVisibilityChange={handleColumnVisibilityChange}
-      />
-
       <DataTable<FormResponse>
-        columns={displayedColumns} // Pass only the currently displayed columns to DataTable
+        columns={allColumns}
         data={responses}
         isLoading={loading}
         isError={!!error}
         errorMessage={error || "Failed to load responses."}
         noDataMessage="No responses found."
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        visibleColumnIds={visibleColumnIds}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
+        defaultVisibleColumns={7} // Show 7 columns by default
+        hideColumns={["responseId", "status"]} // Hide ID and status by default
         pagination={
           totalPages > 1
             ? {
@@ -226,7 +233,7 @@ export default function ResponsesTable({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action will soft-delete this response and move it to the archive. You can restore it later from the archive.
+                      This action will delete this response and move it to the archive. You can restore it later from the archive.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -236,7 +243,7 @@ export default function ResponsesTable({
                       disabled={isDeleting}
                     >
                       {isDeleting && <Spinner />}
-                      Continue
+                      Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

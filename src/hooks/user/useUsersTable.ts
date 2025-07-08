@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   fetchUsersAndRoles,
   deleteUserById,
-} from "@/app/api/services/userService";
+} from "@/services";
 import { UserType, RoleType } from "@/types/user";
 import { DataTableColumn } from "@/types/data-table"; // Import DataTableColumn
 

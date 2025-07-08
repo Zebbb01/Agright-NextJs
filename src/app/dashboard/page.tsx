@@ -11,7 +11,7 @@ import FormSummaryTable from "@/components/data/FormSummaryTable";
 import {
   fetchFormResponsesService,
   fetchFormsService,
-} from "../api/services/formService";
+} from "@/services";
 import { FormSummary } from "@/types/form";
 import { LineChartPanel } from "@/components/widget/graphs/LineChartPanel";
 import { RadialChartPanel } from "@/components/widget/graphs/RadialChartPanel";

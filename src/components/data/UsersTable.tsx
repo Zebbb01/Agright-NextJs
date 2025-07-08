@@ -23,9 +23,9 @@ import UsersPanel from "../widget/auth/user/UsersPanel";
 import EditUserModal from "../widget/auth/user/EditUserModal";
 import { useUsersTable } from "@/hooks/user/useUsersTable";
 import { UserType } from "@/types/user";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/table/data-table";
 import { DataTableColumn } from "@/types/data-table";
-import { DataTableControls } from "@/components/data-table-controls"; // Import the new component
+import { DataTableControls } from "@/components/table/data-table-controls"; // Import the new component
 
 export default function UsersTable() {
   const {
@@ -142,12 +142,12 @@ export default function UsersTable() {
         pagination={
           totalPages > 1
             ? {
-                currentPage,
-                totalPages,
-                onPreviousPage: handlePrevious,
-                onNextPage: handleNext,
-                totalItems: totalFilteredUsers, // Pass total count of filtered users
-              }
+              currentPage,
+              totalPages,
+              onPreviousPage: handlePrevious,
+              onNextPage: handleNext,
+              totalItems: totalFilteredUsers, // Pass total count of filtered users
+            }
             : undefined
         }
         renderRowActions={(user) => (

@@ -1,6 +1,6 @@
 // src/app/api/routes/map/route.ts
 import { NextResponse } from "next/server";
-import { getAllLocationsWithImages } from "../../services/mapService"; // Adjust path if needed
+import { getAllLocationsWithImages } from "@/services"; // Adjust path if needed
 
 export const dynamic = 'force-dynamic'; // Ensures the route is always dynamic
 

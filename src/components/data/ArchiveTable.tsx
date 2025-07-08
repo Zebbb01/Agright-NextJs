@@ -3,7 +3,7 @@ import React, { useMemo } from "react"; // Import useMemo
 import { format } from "date-fns";
 import { History, Trash } from "lucide-react";
 
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/table/data-table";
 import { DataTableColumn } from "@/types/data-table";
 import { Form, FormResponse } from "@/types/form";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogSuccess,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -25,7 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { DataTableControls } from "@/components/data-table-controls"; // Import DataTableControls
+import { DataTableControls } from "@/components/table/data-table-controls"; // Import DataTableControls
 
 interface ArchiveTableProps<T> {
   data: T[];
@@ -91,7 +92,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
 
     return (
       <div className="flex items-center justify-end gap-2 h-full">
-        {type === "responses" && (
+        {/* {type === "responses" && (
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="h-9">
@@ -107,7 +108,7 @@ export function ArchiveTable<T extends Form | FormResponse>({
               </pre>
             </DialogContent>
           </Dialog>
-        )}
+        )} */}
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -126,9 +127,9 @@ export function ArchiveTable<T extends Form | FormResponse>({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onRestore(itemId as any)}>
+              <AlertDialogSuccess onClick={() => onRestore(itemId as any)}>
                 Restore
-              </AlertDialogAction>
+              </AlertDialogSuccess>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

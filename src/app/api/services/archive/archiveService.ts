@@ -1,4 +1,3 @@
-// src/app/api/services/archiveService.ts
 import { Form, FormResponse } from "@/types/form";
 
 /**
@@ -33,7 +32,7 @@ export async function getArchivedResponses(): Promise<FormResponse[]> {
  * Restores a form from the archive.
  * @param formId The ID of the form to restore.
  * @throws An error if the API call fails.
- */
+*/
 export async function restoreForm(formId: string): Promise<void> {
   const res = await fetch(`/api/routes/form/${formId}`, {
     method: "PATCH",

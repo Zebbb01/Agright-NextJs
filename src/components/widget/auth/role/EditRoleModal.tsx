@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateRole } from "@/app/api/services/roleService"; // This import path should be correct assuming roleService.ts is in app/api/services
+import { updateRole } from "@/services"; // This import path should be correct assuming roleService.ts is in app/api/services
 import { EditRoleModalProps } from "@/types/auth";
 
 export default function EditRoleModal({

@@ -130,6 +130,19 @@ function AlertDialogAction({
   )
 }
 
+function AlertDialogSuccess({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
+  return (
+    <AlertDialogPrimitive.Action
+      className={cn(buttonVariants({ variant: "default" }), className)}
+      {...props}
+    />
+  )
+}
+
+
 function AlertDialogCancel({
   className,
   ...props
@@ -153,5 +166,6 @@ export {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogAction,
+  AlertDialogSuccess,
   AlertDialogCancel,
 }

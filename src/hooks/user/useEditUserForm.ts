@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { updateUser } from "@/app/api/services/userService";
+import { updateUser } from "@/services";
 import { EditUserModalProps } from "@/types/auth";
 
 export function useEditUserForm({
