@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { Spinner } from "@/components/ui/spinner";
-import { useResponsesTable } from "@/hooks/form/useResponsesTable";
+import { useResponsesTable } from "@/hooks/response/useResponsesTable";
 
 export default function ResponseContainer({ formId }: { formId: string }) {
   const [isCreating, setIsCreating] = useState(false);

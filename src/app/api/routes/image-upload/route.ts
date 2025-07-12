@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client'; // Import Prisma to use JsonObject type
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(req: Request) {
       height,
       resource_type,
       original_filename,
-      exifData, // This is the raw JSON object from Cloudinary, or undefined/null
+      exifData,
     } = body;
 
     if (!public_id || !secure_url) {
@@ -42,8 +43,23 @@ export async function POST(req: Request) {
 
     console.log("ImageUpload created without location, will be linked during form submission");
 
-    return NextResponse.json({ 
-      imageUpload,
+    // Safely access DateTimeOriginal from exifData
+    let takenAt: string | undefined;
+    if (imageUpload.exifData && typeof imageUpload.exifData === 'object' && !Array.isArray(imageUpload.exifData)) {
+      // Cast exifData to Prisma.JsonObject to access its properties
+      const exifObject = imageUpload.exifData as Prisma.JsonObject;
+      if (typeof exifObject.DateTimeOriginal === 'string') {
+        takenAt = exifObject.DateTimeOriginal;
+      }
+    }
+
+    return NextResponse.json({
+      imageUpload: { // Ensure originalFilename is returned in the response
+          id: imageUpload.id,
+          secureUrl: imageUpload.secureUrl,
+          originalFilename: imageUpload.originalFilename,
+          takenAt: takenAt, // Use the safely extracted takenAt
+      },
       message: "Image uploaded successfully. Location will be created when form is submitted."
     }, { status: 200 });
   } catch (error: any) {

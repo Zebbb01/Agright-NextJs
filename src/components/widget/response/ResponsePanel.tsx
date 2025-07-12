@@ -1,13 +1,16 @@
+// src/components/widget/response/ResponsePanel.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { useFormResponse } from "@/hooks/form/useFormResponse";
+import { useFormResponse } from "@/hooks/response/useFormResponse";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+// Import the new ResponseFormFields component
+import ResponseFormFields from "./ResponseFormFields";
+// Ensure FormField and FormData types are accessible, e.g., from a shared types file
+// import { FormField, FormData } from "@/types/form";
 
 interface ResponsePanelProps {
   formId: string;
@@ -42,9 +45,9 @@ export default function ResponsePanel({
     isFormInvalid,
     getImageTakenDate,
     fetchResponseForEdit,
-    handlePermanentDeleteResponse, // ADDED: New function for permanent deletion
-    deletingResponse, // ADDED: New state for deletion loading
-    errorDeletingResponse, // ADDED: New state for deletion error
+    handlePermanentDeleteResponse,
+    deletingResponse,
+    errorDeletingResponse,
   } = useFormResponse({ formId, userId });
 
   // Fetch response data if responseId is provided
@@ -96,7 +99,7 @@ export default function ResponsePanel({
     }
   };
 
-  // ADDED: Function to handle permanent deletion
+  // Function to handle permanent deletion
   const onDelete = async () => {
     if (!responseId) {
       toast.error("Deletion Failed", { description: "No response ID provided for deletion." });
@@ -191,7 +194,7 @@ export default function ResponsePanel({
         </Alert>
       )}
 
-      {/* ADDED: Error alert for deletion errors */}
+      {/* Error alert for deletion errors */}
       {errorDeletingResponse && (
         <Alert variant="destructive" className="mb-4">
           <AlertTitle>Deletion Error</AlertTitle>
@@ -199,176 +202,33 @@ export default function ResponsePanel({
         </Alert>
       )}
 
-      {fields.map((field) => (
-        <div key={field.id} className="space-y-2">
-          <Label className="text-lg font-semibold text-foreground">
-            {field.label}
-            {field.required && !isReadOnly && (
-              <span className="text-red-500 ml-1">*</span>
-            )}
-          </Label>
-
-          {field.type === "Text" && (
-            <Input
-              placeholder={`Enter ${field.label}`}
-              value={formData[field.label] ?? ""}
-              onChange={(e) => handleChange(field.label, e.target.value)}
-              required={field.required}
-              readOnly={isReadOnly}
-              disabled={isReadOnly}
-            />
-          )}
-
-          {field.type === "Date" && (
-            <Input
-              type="date"
-              value={formData[field.label] ?? ""}
-              onChange={(e) => handleChange(field.label, e.target.value)}
-              required={field.required}
-              readOnly={isReadOnly}
-              disabled={isReadOnly}
-            />
-          )}
-
-          {/* Radio Buttons in 2 Columns */}
-          {field.type === "Radio" && field.options && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              {field.options.map((opt, index) => (
-                <div key={opt} className="flex items-center gap-2 ml-2 mb-2">
-                  <input
-                    type="radio"
-                    name={field.label}
-                    value={opt}
-                    checked={formData[field.label] === opt}
-                    onChange={() => handleChange(field.label, opt)}
-                    style={{ accentColor: "var(--foreground)" }}
-                    className="w-4 h-4"
-                    required={field.required && !formData[field.label]}
-                    disabled={isReadOnly}
-                  />
-                  <Label className="text-sm">{opt}</Label>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Checkboxes in 2 Columns */}
-          {field.type === "Checkbox" && field.options && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              {field.options.map((opt, index) => (
-                <div key={opt} className="flex items-center gap-2 ml-2 mb-2">
-                  <input
-                    type="checkbox"
-                    checked={(formData[field.label] || []).includes(opt)}
-                    onChange={() => handleCheckboxChange(field.label, opt)}
-                    style={{ accentColor: "var(--foreground)" }}
-                    className="w-4 h-4 rounded"
-                    disabled={isReadOnly}
-                  />
-                  <Label className="text-sm">{opt}</Label>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {(field.type === "Image Upload" || field.type === "File Upload") && (
-            <div>
-              {!isReadOnly && (
-                <Input
-                  type="file"
-                  accept={field.type === "Image Upload" ? "image/*" : "*"}
-                  onChange={(e) =>
-                    handleFileChange(field.label, e.target.files?.[0] || null)
-                  }
-                  disabled={uploading[field.label]}
-                  required={field.required}
-                />
-              )}
-              {uploading[field.label] && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Spinner />
-                  <p className="text-sm text-blue-500">
-                    Uploading {field.type.toLowerCase()}...
-                  </p>
-                </div>
-              )}
-              {formData[field.label] && typeof formData[field.label] === "string" && (
-                <div className="mt-2">
-                  {field.type === "Image Upload" ? (
-                    <div>
-                      <img
-                        src={formData[field.label].replace("/upload/", "/upload/f_auto,q_auto/")}
-                        alt="Uploaded image"
-                        className="max-w-full h-auto max-h-48 object-contain rounded-md"
-                      />
-                      <div className="mt-2 space-y-1">
-                        {!isReadOnly && (
-                          <p className="text-xs text-green-600">
-                            ✓ Image uploaded successfully. Location data will be
-                            extracted and saved when you submit the form.
-                          </p>
-                        )}
-                        {getImageTakenDate(field.label) && (
-                          <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
-                            <svg
-                              className="w-4 h-4 text-blue-500 flex-shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            <div>
-                              <p className="text-xs font-medium text-blue-700">
-                                Photo taken:
-                              </p>
-                              <p className="text-xs text-blue-600">
-                                {getImageTakenDate(field.label)}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-sm text-green-500">
-                        Uploaded:{" "}
-                        <a
-                          href={formData[field.label]}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline"
-                        >
-                          {formData[field.label].split("/").pop()}
-                        </a>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+      {/* Render the nested form fields component */}
+      <ResponseFormFields
+        fields={fields.map((field: any) => ({
+          ...field,
+          id: typeof field.id === "string" ? Number(field.id) : field.id,
+        }))}
+        formData={formData}
+        handleChange={handleChange}
+        handleCheckboxChange={handleCheckboxChange}
+        handleFileChange={handleFileChange}
+        uploading={uploading}
+        getImageTakenDate={getImageTakenDate}
+        isReadOnly={isReadOnly}
+      />
 
       <div className="flex justify-end gap-2 pt-4">
         <Button
           variant="destructive"
           onClick={() => setIsOpen(false)}
-          disabled={submittingResponse || deletingResponse} // Disable if submitting or deleting
+          disabled={submittingResponse || deletingResponse}
         >
           {isReadOnly ? "Close" : "Cancel"}
         </Button>
         {!isReadOnly && (
           <Button
             onClick={onSubmit}
-            disabled={isFormInvalid || submittingResponse || deletingResponse} // Disable if deleting as well
+            disabled={isFormInvalid || submittingResponse || deletingResponse}
             className="min-w-[120px]"
           >
             {submittingResponse ? (

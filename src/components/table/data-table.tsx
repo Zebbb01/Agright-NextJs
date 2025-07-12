@@ -220,8 +220,13 @@ export function DataTable<T>({
                   </TableCell>
                 ))}
                 {renderRowActions && (
-                  <TableCell className="flex items-center justify-center h-full">
-                    {renderRowActions(item)}
+                  <TableCell
+                    className="align-middle text-center"
+                    style={{ width: "1%", whiteSpace: "nowrap" }}
+                  >
+                    <div className="flex justify-center items-center h-full">
+                      {renderRowActions(item)}
+                    </div>
                   </TableCell>
                 )}
               </TableRow>

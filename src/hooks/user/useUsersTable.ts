@@ -72,7 +72,6 @@ export function useUsersTable() {
       const { usersData, rolesData } = await fetchUsersAndRoles();
       setAllUsers(usersData); // Set all fetched users
       setRoles(rolesData);
-      toast.success("Users loaded successfully!", { duration: 2000 });
     } catch (error) {
       console.error(error);
       toast.error("Failed to load users. Please try again.", {

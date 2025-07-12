@@ -1,12 +1,20 @@
 import { Form, FormResponse } from "@/types/form";
 
+// Get the base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Fallback for safety
+
+// Throw error if not configured in production
+if (process.env.NODE_ENV === "production" && !API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in production environment.");
+}
+
 /**
  * Fetches all archived forms.
  * @returns A promise that resolves to an array of archived forms.
  * @throws An error if the API call fails.
  */
 export async function getArchivedForms(): Promise<Form[]> {
-  const res = await fetch("/api/routes/form/archive");
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/archive`);
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.error || "Failed to fetch archived forms");
@@ -20,7 +28,7 @@ export async function getArchivedForms(): Promise<Form[]> {
  * @throws An error if the API call fails.
  */
 export async function getArchivedResponses(): Promise<FormResponse[]> {
-  const res = await fetch("/api/routes/form/response/archive");
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/archive`);
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.error || "Failed to fetch archived responses");
@@ -34,7 +42,7 @@ export async function getArchivedResponses(): Promise<FormResponse[]> {
  * @throws An error if the API call fails.
 */
 export async function restoreForm(formId: string): Promise<void> {
-  const res = await fetch(`/api/routes/form/${formId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/${formId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +61,7 @@ export async function restoreForm(formId: string): Promise<void> {
  * @throws An error if the API call fails.
  */
 export async function permanentDeleteForm(formId: string): Promise<void> {
-  const res = await fetch(`/api/routes/form/${formId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/${formId}`, {
     method: "DELETE",
   });
   if (!res.ok) {
@@ -68,7 +76,7 @@ export async function permanentDeleteForm(formId: string): Promise<void> {
  * @throws An error if the API call fails.
  */
 export async function restoreResponse(responseId: number): Promise<void> {
-  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -87,7 +95,7 @@ export async function restoreResponse(responseId: number): Promise<void> {
  * @throws An error if the API call fails.
  */
 export async function permanentDeleteResponse(responseId: number): Promise<void> {
-  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`, {
     method: "DELETE",
   });
   if (!res.ok) {

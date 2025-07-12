@@ -4,10 +4,19 @@
  * @returns A promise that resolves to an object containing the Cloudinary signature.
  * @throws Error if obtaining the signature fails.
  */
+
+// Get the base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Fallback for safety
+
+// Throw error if not configured in production
+if (process.env.NODE_ENV === "production" && !API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in production environment.");
+}
+
 export const getCloudinarySignature = async (
   paramsToSign: Record<string, any>
 ): Promise<{ signature: string }> => {
-  const response = await fetch("/api/routes/cloudinary-sign", {
+  const response = await fetch(`${API_BASE_URL}/api/routes/cloudinary-sign`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paramsToSign }),
@@ -80,7 +89,7 @@ export const uploadFileToCloudinaryService = async (
 
   const cloudinaryData = await uploadRes.json();
 
-  const saveToDbRes = await fetch("/api/routes/image-upload", {
+  const saveToDbRes = await fetch(`${API_BASE_URL}/api/routes/image-upload`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

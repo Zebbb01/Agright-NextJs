@@ -12,7 +12,8 @@ export default function FormSelector() {
   const { forms, loading, error, refetchForms } = useForms(); 
 
   const handleSelectForm = (formId: string) => {
-    router.push(`/dashboard/responses?formId=${formId}`);
+    // Updated to use dynamic route instead of query params
+    router.push(`/dashboard/responses/${formId}`);
   };
 
   // --- Conditional Rendering for Loading and Error States ---
@@ -28,7 +29,7 @@ export default function FormSelector() {
     return (
       <div className="max-w-2xl mx-auto p-4 space-y-4 text-center text-red-500">
         <p>Error: {error}</p>
-        <Button onClick={refetchForms}>Try Again</Button> {/* Use refetchForms */}
+        <Button onClick={refetchForms}>Try Again</Button>
       </div>
     );
   }
@@ -38,7 +39,7 @@ export default function FormSelector() {
       <div className="max-w-2xl mx-auto p-4 space-y-4 text-center text-gray-500">
         <h2 className="text-xl font-semibold">No Forms Available</h2>
         <p>There are no forms to display at the moment.</p>
-        <Button onClick={refetchForms}>Refresh</Button> {/* Optionally allow refresh */}
+        <Button onClick={refetchForms}>Refresh</Button>
       </div>
     );
   }

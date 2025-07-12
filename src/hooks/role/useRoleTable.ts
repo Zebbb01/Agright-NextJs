@@ -54,9 +54,6 @@ export function useRoleTable() {
     try {
       const data = await fetchRoles();
       setAllRoles(data);
-      toast.success("Roles loaded successfully!", {
-        duration: 2000,
-      });
     } catch (error) {
       console.error(error);
       toast.error("Failed to load roles. Please try again.", {

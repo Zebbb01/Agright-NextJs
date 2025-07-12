@@ -1,10 +1,18 @@
 import { toast } from "sonner"; // Import toast for notifications
 
+// Get the base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Fallback for safety
+
+// Throw error if not configured in production
+if (process.env.NODE_ENV === "production" && !API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in production environment.");
+}
+
 export async function fetchUsersAndRoles() {
   try {
     const [usersRes, rolesRes] = await Promise.all([
-      fetch("/api/auth/users"),
-      fetch("/api/auth/roles"),
+      fetch(`${API_BASE_URL}/api/auth/users`),
+      fetch(`${API_BASE_URL}/api/auth/roles`),
     ]);
 
     if (!usersRes.ok || !rolesRes.ok) {
@@ -28,7 +36,7 @@ export async function fetchUsersAndRoles() {
 
 export async function deleteUserById(userId: number) {
   try {
-    const response = await fetch("/api/auth/users", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/users`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +65,7 @@ export async function createUser(userData: {
   password: string;
   roleName: string;
 }) {
-  const response = await fetch("/api/auth/users", {
+  const response = await fetch(`${API_BASE_URL}/api/auth/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -78,7 +86,7 @@ export async function updateUser(userData: {
   password?: string;
   roleName: string;
 }) {
-  const response = await fetch("/api/auth/users", {
+  const response = await fetch(`${API_BASE_URL}/api/auth/users`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),

@@ -3,8 +3,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn, getSession } from "next-auth/react"; // Add getSession
-import { Eye, EyeOff } from "lucide-react";
+import { signIn, getSession } from "next-auth/react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -61,81 +61,138 @@ export function LoginForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex items-center justify-center">
+    <div className={cn("w-full max-w-md mx-auto", className)} {...props}>
+      {/* Background Card with Gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-card border border-border shadow-lg">
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/10 rounded-full blur-3xl"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Header Section */}
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary/10 border border-primary/20 mb-2">
                 <img
                   src="/logo.png"
                   alt="Agright Tech Logo"
-                  className="h-12 w-12 object-contain"
+                  className="h-10 w-10 object-contain"
                 />
               </div>
-              <span className="sr-only">Agright Tech.</span>
-            </a>
-            <h1 className="text-xl font-bold">Welcome to Agright Tech.</h1>
-          </div>
-
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-3">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pr-10"
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground focus:outline-none"
-                  tabIndex={-1}
-                  disabled={isSubmitting}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+                <p className="text-sm text-muted-foreground">
+                  Sign in to your Agright Tech account
+                </p>
               </div>
             </div>
-            <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                  Email Address
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Mail size={18} />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                    className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Password
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Lock size={18} />
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                    className="pl-10 pr-12 h-12 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-primary transition-colors duration-200"
+                    tabIndex={-1}
+                    disabled={isSubmitting}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Forgot Password Link */}
+              {/* <div className="text-right">
+                <a
+                  href="#"
+                  className="text-sm text-primary hover:text-primary/80 transition-colors duration-200 underline underline-offset-4"
+                >
+                  Forgot password?
+                </a>
+              </div> */}
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center gap-2">
                   <Spinner />
-                </>
+                  <span>Signing in...</span>
+                </div>
               ) : (
-                "Login"
+                <div className="flex items-center gap-2">
+                  <span>Sign In</span>
+                  <ArrowRight size={18} />
+                </div>
               )}
             </Button>
-          </div>
-{/* 
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-background text-muted-foreground relative z-10 px-2">
-              Or
-            </span>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-1">
-            <Button variant="outline" type="button" className="w-full cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-2">
+            {/* Social Login Section (Commented out but enhanced) */}
+            {/* 
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-3 text-muted-foreground font-medium">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full h-12 bg-background/50 border-border/50 hover:bg-accent/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-3">
                 <path
                   d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
                   fill="currentColor"
@@ -143,14 +200,44 @@ export function LoginForm({
               </svg>
               Continue with Google
             </Button>
-          </div> */}
-        </div>
-      </form>
+            */}
+          </form>
 
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-border/50">
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              By signing in, you agree to our{" "}
+              <a
+                href="#"
+                className="text-primary hover:text-primary/80 transition-colors duration-200 underline underline-offset-4"
+              >
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a
+                href="#"
+                className="text-primary hover:text-primary/80 transition-colors duration-200 underline underline-offset-4"
+              >
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </div>
+        </div>
       </div>
+
+      {/* Additional Sign Up Link */}
+      {/* <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <a
+            href="#"
+            className="text-primary hover:text-primary/80 transition-colors duration-200 font-medium underline underline-offset-4"
+          >
+            Sign up for free
+          </a>
+        </p>
+      </div> */}
     </div>
   );
 }

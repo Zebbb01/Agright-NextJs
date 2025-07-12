@@ -12,12 +12,11 @@ export default function Home() {
 
   useEffect(() => {
     if (status === "loading") {
-      return;
+      return; // Do nothing while session is loading
     }
 
     if (session) {
-      // Use window.location.href for a complete page refresh
-      window.location.href = "/dashboard";
+      router.replace("/dashboard"); // Use router.replace for internal redirects
     } else {
       router.replace("/login");
     }
@@ -31,5 +30,5 @@ export default function Home() {
     );
   }
 
-  return null;
+  return null; // Don't render anything once redirection logic is complete
 }

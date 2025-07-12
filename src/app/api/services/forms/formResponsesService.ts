@@ -1,4 +1,13 @@
+// src/app/api/services/forms/formResponsesService.ts
 import { FormResponsePayload, FormResponse } from "@/types/form";
+
+// Get the base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Fallback for safety
+
+// Throw error if not configured in production
+if (process.env.NODE_ENV === "production" && !API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in production environment.");
+}
 
 /**
  * Submits a form response.
@@ -9,7 +18,8 @@ import { FormResponsePayload, FormResponse } from "@/types/form";
 export const submitFormResponseService = async (
   payload: FormResponsePayload
 ): Promise<void> => {
-  const res = await fetch("/api/routes/form/response", {
+  // Use absolute URL
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response`, {
     method: "POST",
     body: JSON.stringify(payload),
     headers: { "Content-Type": "application/json" },
@@ -32,9 +42,9 @@ export const submitFormResponseService = async (
 export const fetchFormResponsesService = async (
   formId?: string
 ): Promise<FormResponse[]> => {
-  let url = `/api/routes/form/response`;
+  let url = `${API_BASE_URL}/api/routes/form/response`; // Use absolute URL
   if (formId) {
-    url = `/api/routes/form/response/by-form/${formId}`;
+    url = `${API_BASE_URL}/api/routes/form/response/by-form/${formId}`; // Use absolute URL
   }
 
   const res = await fetch(url);
@@ -57,7 +67,8 @@ export const fetchFormResponsesService = async (
 export const fetchFormResponseService = async (
   responseId: number
 ): Promise<FormResponse> => {
-  const response = await fetch(`/api/routes/form/response/${responseId}`);
+  // Use absolute URL
+  const response = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`);
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
@@ -79,7 +90,8 @@ export const updateFormResponseService = async (
   responseId: number,
   payload: Partial<FormResponsePayload> // Use Partial as not all fields might be updated
 ): Promise<void> => {
-  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+  // Use absolute URL
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`, {
     method: "PATCH", // Use PATCH for partial updates
     body: JSON.stringify(payload),
     headers: { "Content-Type": "application/json" },
@@ -102,7 +114,8 @@ export const updateFormResponseService = async (
 export const deleteFormResponseService = async (
   responseId: number
 ): Promise<void> => {
-  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+  // Use absolute URL
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "soft-delete" }),
@@ -133,7 +146,8 @@ export const deleteFormResponseService = async (
 export const permanentlyDeleteFormResponseService = async (
   responseId: number
 ): Promise<void> => {
-  const res = await fetch(`/api/routes/form/response/${responseId}`, {
+  // Use absolute URL
+  const res = await fetch(`${API_BASE_URL}/api/routes/form/response/${responseId}`, {
     method: "DELETE",
   });
 

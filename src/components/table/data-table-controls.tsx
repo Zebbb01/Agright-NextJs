@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Settings2 } from "lucide-react";
+import { Settings2, Search } from "lucide-react"; // Import Search icon
 import { DataTableColumn } from "@/types/data-table";
 
 interface DataTableControlsProps<T> {
@@ -32,13 +32,16 @@ export function DataTableControls<T>({
 }: DataTableControlsProps<T>) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      {/* Search Input */}
-      <Input
-        placeholder="Search all columns..."
-        value={searchTerm}
-        onChange={(event) => onSearchChange(event.target.value)}
-        className="max-w-sm"
-      />
+      {/* Search Input with Icon */}
+      <div className="relative flex items-center">
+        <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search any columns..."
+          value={searchTerm}
+          onChange={(event) => onSearchChange(event.target.value)}
+          className="max-w-sm pl-9" // Add left padding to make space for the icon
+        />
+      </div>
 
       {/* Column Visibility Toggle */}
       <DropdownMenu>

@@ -1,5 +1,13 @@
 import { FormOption } from "@/types/form";
 
+// Get the base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // Fallback for safety
+
+// Throw error if not configured in production
+if (process.env.NODE_ENV === "production" && !API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined in production environment.");
+}
+
 /**
  * Fetches form options for a given formId.
  * @param formId The ID of the form.
@@ -9,7 +17,7 @@ import { FormOption } from "@/types/form";
 export const fetchFormOptionsService = async (
   formId: string
 ): Promise<FormOption[]> => {
-  const response = await fetch(`/api/routes/form/options/${formId}`);
+  const response = await fetch(`${API_BASE_URL}/api/routes/form/options/${formId}`);
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
